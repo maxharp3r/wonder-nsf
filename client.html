@@ -1,8 +1,9 @@
 <html>
 <head>
-	<title>Foo</title>
+	<title>Wonder/Why</title>
 	<script src="/static/jquery-1.7.1.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
+	
 </head>
 <body>
 	<div>
@@ -14,19 +15,6 @@
 
 	<div id="results" style="border:1px solid black; background: #eee; padding:10px; margin-top:10px;"></div>
 
-	<script>
-	  var results = $("div#results");
-
-	  var socket = io.connect('http://localhost:8080');
-	  socket.on('test', function (data) {
-	    results.text(data.screen_name);
-	  });
-	  socket.on('twitter', function (data) {
-	    results.text(data.completed_in);
-	  });
-
-	  $("a#test").click(function() { socket.emit("test"); });
-	  $("a#go").click(function() { socket.emit("go"); });
-	</script>
+	<script src="/static/client.js"></script>
 </body>
 </html>
