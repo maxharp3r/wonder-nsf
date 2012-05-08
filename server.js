@@ -1,9 +1,14 @@
 
+// lib
 var express = require('express');
 var app = express.createServer();
 var io = require('socket.io').listen(app);
 var twitter = require('ntwitter');
 // var _und = require("./underscore-min")
+
+// local
+var keys = require('./keys.js'); // private
+
 
 app.configure(function() {
     app.use('/static', express.static(__dirname + '/static'));
@@ -11,11 +16,14 @@ app.configure(function() {
 
 app.listen(8080);
 app.get('/', function (req, res) {
-	res.sendfile(__dirname + '/foo.html');
+	res.sendfile(__dirname + '/client.html');
 });
 
 var twit = new twitter({
-	/* TODO */
+	consumer_key: keys.twitter.consumer_key,
+	consumer_secret: keys.twitter.consumer_secret,
+	access_token_key: keys.twitter.access_token_key,
+	access_token_secret: keys.twitter.access_token_secret
 });
 
 var searchResults = undefined;
