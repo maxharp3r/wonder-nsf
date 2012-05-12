@@ -2,16 +2,16 @@
 // lib
 var express = require('express');
 var app = express.createServer();
-var io = require('socket.io').listen(app);
-var twitter = require('ntwitter');
+var io = require('socket.io').listen(app).set("log level", 1);
+var $ = require('jquery');
 // var _und = require("./underscore-min")
 
 // local
-var keys = require('./keys.js'); // private
-
+var nsp = require('./nsp.js');
+nsp.init();
 
 app.configure(function() {
-    app.use('/static', express.static(__dirname + '/static'));
+	app.use('/static', express.static(__dirname + '/static'));
 });
 
 app.listen(8080);
@@ -19,40 +19,34 @@ app.get('/', function (req, res) {
 	res.sendfile(__dirname + '/client.html');
 });
 
-var twit = new twitter({
-	consumer_key: keys.twitter.consumer_key,
-	consumer_secret: keys.twitter.consumer_secret,
-	access_token_key: keys.twitter.access_token_key,
-	access_token_secret: keys.twitter.access_token_secret
-});
+var appState = {
+	numConnected: 0,
+	connectedClients: {}, // map id to websocket
+};
 
-var searchResults = undefined;
-
-
-var connectedClients = {}; // map id to websocket
 
 // handle sockets
 io.sockets.on('connection', function (socket) {
 
-	console.log("Connection:", socket.id);
-	connectedClients[socket.id] = socket;
+	appState.numConnected++;
+	appState.connectedClients[socket.id] = socket;
+	// console.log("Connection:", socket.id);
+	// console.log("Num connected clients:", appState.numConnected);
 
 	socket.on('disconnect', function () {
-		console.log("Disconnect:", socket.id);
-		delete connectedClients[socket.id];
+		appState.numConnected--;
+		// console.log("Disconnect:", socket.id);
+		delete appState.connectedClients[socket.id];
 	});
 
 	socket.on("test", function() {
-		console.log("test received");
-		twit.verifyCredentials(function(err, data) {
-		    socket.emit("test", data);
+		$.when(nsp.test()).done(function(data) {
+			socket.emit("test", data);
 		});
 	});
 
 	socket.on("go", function() {
-		console.log("go received");
-		twit.search('I wonder', function(err, data) {
-			console.log("twitter search returned");
+		$.when(nsp.go()).done(function(data) {
 			socket.emit("twitter", data);
 		});
 	});
