@@ -14,7 +14,10 @@ var client = {
 			self.socket.emit("test");
 			self.dom.results.text("waiting for twitter...");
 		});
-		this.dom.go_link.click(function() { self.socket.emit("go"); });
+		this.dom.go_link.click(function() {
+			self.socket.emit("go");
+			self.dom.results.text("searching...");
+		});
 		this.listen();
 	},
 

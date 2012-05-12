@@ -15,7 +15,7 @@ app.configure(function() {
 
 app.listen(8080);
 app.get('/', function (req, res) {
-	res.sendfile(__dirname + '/client.html');
+	res.sendfile(__dirname + '/static/client.html');
 });
 // TODO: how to configure node/express to be resilient to exceptions?
 

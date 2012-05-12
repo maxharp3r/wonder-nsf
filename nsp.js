@@ -8,6 +8,7 @@ this.twit = null;
 
 this.init = function(eventEmitter) {
 	this.eventEmitter = eventEmitter;
+	
 	this.twit = new ntwitter({
 		consumer_key: keys.twitter.consumer_key,
 		consumer_secret: keys.twitter.consumer_secret,
