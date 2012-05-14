@@ -3,17 +3,18 @@
 	<title>Wonder/Why</title>
 	<script src="/static/jquery-1.7.1.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
-
+	<link rel="stylesheet" href="/static/client.css" type="text/css">
 </head>
 <body>
-	<div>
-		<a href="#" id="test">test: get my twitter handle</a>
-	</div>
-	<div>
-		<a href="#" id="go">go: search twitter for messages now</a>
-	</div>
-
-	<div id="results" style="border:1px solid black; background: #eee; padding:10px; margin-top:10px;"></div>
+	<header>
+		<a href="#" id="test">test</a>
+		| <a href="#" id="go">search now</a>
+		| <a href="#" id="next">next</a>
+		| <a href="#" id="show-user">show user</a>
+		| <a href="#" id="show-photo">show photo</a>
+	</header>
+	<div id="results"></div>
+	<div id="img"></div>
 
 	<script src="/static/client.js"></script>
 </body>

@@ -53,6 +53,18 @@ io.sockets.on('connection', function (socket) {
 		});
 	});
 
+	socket.on("next", function() {
+		$.when(nsp.next()).done(function(data) {
+			socket.emit("twitter_result", data);
+		});
+	});
+
+	socket.on("photo", function() {
+		$.when(nsp.photo()).done(function(data) {
+			socket.emit("photo", data);
+		});
+	});
+
 });
 
 // handle server-side events
