@@ -1,6 +1,4 @@
 
-var events = require('events');
-
 var express = require('express');
 var app = express.createServer();
 var redis = require("redis");
@@ -30,12 +28,11 @@ db.on("error", function (err) {
 	console.error("REDIS ERROR (server): " + err);
 });
 // initialize application state
-var eventEmitter = new events.EventEmitter();
 var appState = {
 	numConnected: 0,
 	socketsById: {}, // map id to websocket
 };
-nsp.init(eventEmitter, db);
+nsp.init();
 
 // handle socket connections and messages
 // docs: https://github.com/learnboost/socket.io
@@ -78,13 +75,6 @@ io.sockets.on('connection', function (socket) {
 });
 
 // handle server-side events
-eventEmitter.on('test', function (data) {
-	var sockets = underscore.values(appState.socketsById);
-	underscore.each(sockets, function(socket) {
-		socket.emit("test", data);
-	});
-});
-
 db.on("message", function (channel, message) {
 	console.log("redis channel " + channel + ": " + message);
 });

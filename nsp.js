@@ -6,7 +6,7 @@ var underscore = require("./static/underscore-1.3.1-min");
 
 var keys = require('./keys.js'); // private
 
-this.eventEmitter = null;
+this.db = null;
 this.nTwitterApi = null;
 
 
@@ -32,9 +32,7 @@ this.data = {
 	],
 };
 
-this.init = function(eventEmitter) {
-	this.eventEmitter = eventEmitter;
-
+this.init = function() {
 	// db client
 	var db = redis.createClient();
 	db.on("error", function (err) {
@@ -48,14 +46,6 @@ this.init = function(eventEmitter) {
 		consumer_secret: keys.twitter.consumer_secret,
 		access_token_key: keys.twitter.access_token_key,
 		access_token_secret: keys.twitter.access_token_secret
-	});
-};
-
-this.fooEventEmitter = function() {
-	// demo eventEmitter
-	var self = this;
-	this.nTwitterApi.verifyCredentials(function(err, data) {
-		self.eventEmitter.emit('test', data);
 	});
 };
 
