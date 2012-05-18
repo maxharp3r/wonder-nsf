@@ -1,12 +1,15 @@
 
 var $ = require('jquery');
 var ntwitter = require('ntwitter');
+var redis = require("redis");
 var underscore = require("./static/underscore-1.3.1-min");
 
 var keys = require('./keys.js'); // private
 
 this.eventEmitter = null;
 this.nTwitterApi = null;
+
+
 
 this.data = {
 	result_idx: 0,
@@ -32,6 +35,14 @@ this.data = {
 this.init = function(eventEmitter) {
 	this.eventEmitter = eventEmitter;
 
+	// db client
+	var db = redis.createClient();
+	db.on("error", function (err) {
+		console.error("REDIS ERROR (server): " + err);
+	});
+	this.db = db;
+
+	// new twitter api
 	this.nTwitterApi = new ntwitter({
 		consumer_key: keys.twitter.consumer_key,
 		consumer_secret: keys.twitter.consumer_secret,
@@ -50,6 +61,8 @@ this.fooEventEmitter = function() {
 
 this.test = function() {
 	console.log("test received");
+
+	this.db.publish("event_stream", "I am sending a message.");
 
 	var deferred = new $.Deferred();
 	this.nTwitterApi.verifyCredentials(function(err, data) {

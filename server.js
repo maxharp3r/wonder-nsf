@@ -3,32 +3,43 @@ var events = require('events');
 
 var express = require('express');
 var app = express.createServer();
+var redis = require("redis");
 var io = require('socket.io').listen(app).set("log level", 1);
 var $ = require('jquery');
 var underscore = require("./static/underscore-1.3.1-min");
 
 var nsp = require('./nsp.js');
 
+
+// app setup
 app.configure(function() {
 	app.use('/static', express.static(__dirname + '/static'));
 });
-
 app.listen(8080);
 app.get('/', function (req, res) {
 	res.sendfile(__dirname + '/static/client.html');
 });
-// TODO: how to configure node/express to be resilient to exceptions?
+app.error(function(err, req, res){
+	console.error("APP ERROR: " + err);
+});
 
+
+// configure the db connection
+var db = redis.createClient();
+db.on("error", function (err) {
+	console.error("REDIS ERROR (server): " + err);
+});
 // initialize application state
 var eventEmitter = new events.EventEmitter();
 var appState = {
 	numConnected: 0,
 	socketsById: {}, // map id to websocket
 };
-nsp.init(eventEmitter);
+nsp.init(eventEmitter, db);
 
 // handle socket connections and messages
 // docs: https://github.com/learnboost/socket.io
+// TODO: how to configure socket.io to be resilient to exceptions?
 io.sockets.on('connection', function (socket) {
 	console.log("connect", socket.id);
 
@@ -64,7 +75,6 @@ io.sockets.on('connection', function (socket) {
 			socket.emit("photo", data);
 		});
 	});
-
 });
 
 // handle server-side events
@@ -74,6 +84,11 @@ eventEmitter.on('test', function (data) {
 		socket.emit("test", data);
 	});
 });
+
+db.on("message", function (channel, message) {
+	console.log("redis channel " + channel + ": " + message);
+});
+db.subscribe("event_stream");
 
 
 
