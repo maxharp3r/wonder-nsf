@@ -64,7 +64,12 @@ var client = {
 		this.socket.on('twitter_result', function (data) {
 			console.log("received twitter msg", data);
 			self.data.twitter_result = data;
-			self.dom.results.text(data.text);
+
+			var main = $("<div></div>", {"class": "main"}).html(data.text);
+			var footer = $("<div></div>", {"class": "footer"})
+				.html("@" + data.from_user + "<br>" + data.created_at);
+
+			self.dom.results.text("").append(main).append(footer);
 
 			// pre-load img
 			var img = $("<img>", {
