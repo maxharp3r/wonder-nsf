@@ -84,7 +84,8 @@ var client = {
 			self.dom.results.text(data);
 
 			// pre-load img
-			var img = $("<img>", {
+			var img = null;
+			img = $("<img>", {
 				src: data,
 				width: 960,
 				height: 400,

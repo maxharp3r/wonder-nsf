@@ -2,7 +2,7 @@
 var $ = require('jquery');
 var ntwitter = require('ntwitter');
 var redis = require("redis");
-var underscore = require("./static/underscore-1.3.1-min");
+var underscore = require("./static/lib/underscore-1.3.1-min");
 
 var keys = require('./keys.js'); // private
 
