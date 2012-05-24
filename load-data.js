@@ -31,8 +31,17 @@ var readWords = function() {
 //readWords();
 
 var addToDb = function(score, str) {
-	console.log("Adding: " + score + " => " + str);
-	db.zadd("nsp:words", score, str.toLowerCase().trim());
+	var s = str.toLowerCase().trim();
+	console.log("Adding: " + score + " => " + s);
+	db.zscore("nsp:words", s, function(err, res) {
+		if (!res) {
+			// don't re-add
+			db.zadd("nsp:words", score, s);
+		} else {
+			console.log("skipping (re-add): " + s);
+		}
+	});
+
 };
 
 // made this words list from the 12 dictionaries source,
