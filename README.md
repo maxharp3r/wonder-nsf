@@ -25,3 +25,17 @@ Dependencies
   * brew install redis
   * https://github.com/mranney/node_redis - npm install redis
   * (client access: `redis.cli` )
+
+
+Docs
+----
+
+* socket.io - https://github.com/learnboost/socket.io
+* node_redis - https://github.com/mranney/node_redis
+* Twitter API
+  * https://github.com/AvianFlu/ntwitter
+  * https://dev.twitter.com/docs/api/1/get/search
+  * https://dev.twitter.com/docs/using-search
+* Flickr API
+  * http://www.flickr.com/services/api/
+  * http://www.flickr.com/services/api/misc.urls.html
