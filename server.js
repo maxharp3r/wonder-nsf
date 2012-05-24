@@ -40,6 +40,7 @@ nsp.init();
 io.sockets.on('connection', function (socket) {
 	console.log("connect", socket.id);
 
+	socket.join('all');
 	appState.numConnected++;
 	appState.socketsById[socket.id] = socket;
 
@@ -57,13 +58,19 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on("go", function() {
 		$.when(nsp.go()).done(function(data) {
-			socket.emit("twitter", data);
+			console.log("found twitter data");
+			// socket.broadcast.emit("twitter", data);
+			socket.broadcast.to("all").emit("twitter", data);
 		});
 	});
 
 	socket.on("next", function() {
 		$.when(nsp.next()).done(function(data) {
 			socket.emit("twitter_result", data);
+			// socket.broadcast.emit("twitter_result", data);
+			// socket.broadcast.to("all").emit("twitter_result", data);
+			console.log("NEXT", data);
+			// io.sockets.in("all").emit("twitter_result", data);
 		});
 	});
 
@@ -75,10 +82,11 @@ io.sockets.on('connection', function (socket) {
 });
 
 // handle server-side events
-db.on("message", function (channel, message) {
-	console.log("redis channel " + channel + ": " + message);
+db.on("message", function (channel, data) {
+	console.log("redis channel " + channel + ": " + data);
+	// io.sockets.in("all").emit("test", data);
 });
-db.subscribe("event_stream");
+db.subscribe("nsp:event_stream");
 
 
 

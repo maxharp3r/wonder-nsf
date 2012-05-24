@@ -10,7 +10,6 @@ this.db = null;
 this.nTwitterApi = null;
 
 
-
 this.data = {
 	result_idx: 0,
 	results: [],
@@ -52,10 +51,11 @@ this.init = function() {
 this.test = function() {
 	console.log("test received");
 
-	this.db.publish("event_stream", "I am sending a message.");
+	var self = this;
 
 	var deferred = new $.Deferred();
 	this.nTwitterApi.verifyCredentials(function(err, data) {
+		self.db.publish("nsp:event_stream", JSON.stringify(data));
 		deferred.resolve(data);
 	});
 	return deferred.promise();
@@ -75,18 +75,44 @@ this.go = function() {
 	this.nTwitterApi.search(searchString, {rpp: 100}, function(err, data) {
 		underscore.each(data.results, function(result) {
 			if (result.text.substr(0,8) === "I wonder") {
-				self.data.results.push(result);
+				//self.data.results.push(result);
+
+				self.db.lpush("nsp:twitter:msg", JSON.stringify(result));
+				self.db.llen("nsp:twitter:msg", function (err, res) {
+					console.log("LEN: " + res);
+				});
+				self.db.ltrim("nsp:twitter:msg", 0, 99); // keep up to 100 messages
+
+				// get the interesting words
+				var words = result.text.substr(8).split(/[^a-zA-Z]/);
+				underscore.each(words, function(word) {
+					if (word.length > 2) {
+						word = word.toLowerCase();
+						self.db.zscore("nsp:words", word, function(err, res) {
+							console.log("word: " + word + " => " + res);
+						});
+					}
+				});
+
 			}
 		});
 
-		deferred.resolve(self.data.results.length);
+		self.db.llen("nsp:twitter:msg", function (err, res) {
+			deferred.resolve(res);
+		});
+
 	});
 
 	return deferred.promise();
 };
 
 this.next = function() {
-	return this.data.results[this.data.result_idx++];
+	var deferred = new $.Deferred();
+	this.db.rpop("nsp:twitter:msg", function(err, res) {
+		deferred.resolve(JSON.parse(res));
+	});
+	return deferred;
+	// return this.data.results[this.data.result_idx++];
 };
 
 this.photo = function() {
