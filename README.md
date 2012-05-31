@@ -39,3 +39,11 @@ Docs
 * Flickr API
   * http://www.flickr.com/services/api/
   * http://www.flickr.com/services/api/misc.urls.html
+
+
+Data
+----
+
+* http://stackoverflow.com/questions/1594098/where-to-get-a-list-of-almost-all-the-words-in-english-language
+* http://wordlist.sourceforge.net/
+  * http://wordlist.sourceforge.net/12dicts-readme-r5.html

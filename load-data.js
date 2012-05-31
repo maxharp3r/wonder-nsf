@@ -12,24 +12,6 @@ db.on("error", function (err) {
 	console.error("REDIS ERROR (server): " + err);
 });
 
-// possible data sources
-// http://stackoverflow.com/questions/1594098/where-to-get-a-list-of-almost-all-the-words-in-english-language
-// http://wordlist.sourceforge.net/
-// http://www.englishclub.com/vocabulary/common-words-5000.htm
-
-var readWords = function() {
-	var stream = fs.createReadStream('data/words');
-	var i = 0;
-	new Lazy(stream)
-	.lines
-	.forEach(function(line) {
-		i++;
-		console.log(i + " => " + line.toString().toLowerCase());
-		db.zadd("nsp:words", i, line.toString().toLowerCase());
-	});
-};
-//readWords();
-
 var addToDb = function(score, str) {
 	var s = str.toLowerCase().trim();
 	console.log("Adding: " + score + " => " + s);
