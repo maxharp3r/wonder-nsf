@@ -2,6 +2,7 @@
 <head>
 	<title>Wonder/Why</title>
 	<script src="/static/lib/jquery-1.7.1.min.js"></script>
+	<script src="/static/lib/jquery.timeago-0.11.3.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<link rel="stylesheet" href="/static/client.css" type="text/css">
 </head>
@@ -15,7 +16,10 @@
 		| # msg <span id="num-twitter"></span>
 		| # img <span id="num-img"></span>
 	</header>
-	<div id="results"></div>
+	<div id="results">
+		<div class="main"></div>
+		<div class="footer"></div>
+	</div>
 	<div id="img"></div>
 
 	<script src="/static/client.js"></script>

@@ -64,9 +64,6 @@ this.test = function() {
 this.go = function() {
 	var self = this;
 
-	// https://github.com/AvianFlu/ntwitter
-	// https://dev.twitter.com/docs/api/1/get/search
-	// https://dev.twitter.com/docs/using-search
 	console.log("go received");
 	var deferred = new $.Deferred();
 
