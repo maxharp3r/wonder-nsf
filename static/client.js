@@ -89,7 +89,9 @@ var client = {
 			self.data.twitter_result = data;
 
 			self.dom.resultsMain.html(data.text);
-			self.dom.resultsFooter.html("@" + data.from_user + "<br>" + $.timeago(data.created_at));
+			self.dom.resultsFooter.html("@" + data.from_user
+					+ "<br>" + $.timeago(data.created_at)
+					+ "<br>" + data.words);
 
 			// pre-load img
 			var img = $("<img>", {

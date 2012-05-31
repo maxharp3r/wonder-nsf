@@ -77,21 +77,31 @@ this.go = function() {
 			})
 			.reverse() // reverse the default order - we want old to new
 			.each(function(result) {
+
 				// get the interesting words
 				var words = result.text.substr(8).split(/[^a-zA-Z]/);
 				underscore.each(words, function(word) {
 					if (word.length > 2) {
 						word = word.toLowerCase();
 						self.db.zscore("nsp:words", word, function(err, res) {
+							if (err) {
+								return;
+							}
+
+							if (res > 1000) {
+								var key = "nsp:twitter:msg:" + result.id + ":words";
+								self.db.zadd(key, res, word);
+								self.db.expire(key, 36000); // 10 hours
+							}
 							// console.log("word: " + word + " => " + res);
 						});
 					}
 				});
 
-				// rpush message - right is newest, left is oldest
-				self.db.lpush("nsp:twitter:msg", JSON.stringify(result));
+				// rpush message - oldest <==> newest
+				self.db.rpush("nsp:twitter:msg", JSON.stringify(result));
 				self.db.llen("nsp:twitter:msg", function (err, res) {
-					console.log("LEN: " + res);
+					// console.log("LEN: " + res);
 				});
 				self.db.ltrim("nsp:twitter:msg", 0, 99); // keep up to 100 messages
 		});
@@ -106,11 +116,24 @@ this.go = function() {
 };
 
 this.next = function() {
+	var self = this;
 	var deferred = new $.Deferred();
 
 	// lpop message (oldest message)
 	this.db.lpop("nsp:twitter:msg", function(err, res) {
-		deferred.resolve(JSON.parse(res));
+		var result = JSON.parse(res);
+		result.words = [];
+
+		var key = "nsp:twitter:msg:" + result.id + ":words";
+		console.log("(looking)");
+		self.db.zrevrange(key, 0, -1, function(err, words) {
+			underscore.each(words, function(word) {
+				result.words.push(word);
+				console.log("XXX: " + word);
+			});
+			deferred.resolve(result);
+		});
+
 	});
 	return deferred;
 	// return this.data.results[this.data.result_idx++];
