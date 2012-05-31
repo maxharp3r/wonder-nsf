@@ -70,28 +70,30 @@ this.go = function() {
 	var searchString = encodeURIComponent('"I wonder"');
 	console.log("search for ", searchString);
 	this.nTwitterApi.search(searchString, {rpp: 100}, function(err, data) {
-		underscore.each(data.results, function(result) {
-			if (result.text.substr(0,8) === "I wonder") {
-				//self.data.results.push(result);
-
-				self.db.lpush("nsp:twitter:msg", JSON.stringify(result));
-				self.db.llen("nsp:twitter:msg", function (err, res) {
-					console.log("LEN: " + res);
-				});
-				self.db.ltrim("nsp:twitter:msg", 0, 99); // keep up to 100 messages
-
+		underscore.chain(data.results)
+			.filter(function(result) {
+				// only want tweets that /start with/ I wonder
+				return result.text.substr(0,8) === "I wonder";
+			})
+			.reverse() // reverse the default order - we want old to new
+			.each(function(result) {
 				// get the interesting words
 				var words = result.text.substr(8).split(/[^a-zA-Z]/);
 				underscore.each(words, function(word) {
 					if (word.length > 2) {
 						word = word.toLowerCase();
 						self.db.zscore("nsp:words", word, function(err, res) {
-							console.log("word: " + word + " => " + res);
+							// console.log("word: " + word + " => " + res);
 						});
 					}
 				});
 
-			}
+				// rpush message - right is newest, left is oldest
+				self.db.lpush("nsp:twitter:msg", JSON.stringify(result));
+				self.db.llen("nsp:twitter:msg", function (err, res) {
+					console.log("LEN: " + res);
+				});
+				self.db.ltrim("nsp:twitter:msg", 0, 99); // keep up to 100 messages
 		});
 
 		self.db.llen("nsp:twitter:msg", function (err, res) {
@@ -105,7 +107,9 @@ this.go = function() {
 
 this.next = function() {
 	var deferred = new $.Deferred();
-	this.db.rpop("nsp:twitter:msg", function(err, res) {
+
+	// lpop message (oldest message)
+	this.db.lpop("nsp:twitter:msg", function(err, res) {
 		deferred.resolve(JSON.parse(res));
 	});
 	return deferred;
