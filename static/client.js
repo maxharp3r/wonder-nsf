@@ -23,16 +23,14 @@ var utils = {
 var client = {
 	socket: null,
 
-	data: {
-		twitter_result: null,
-	},
-
 	dom: {
+		// general
+		body: $("body"),
+
 		// controls
 		test_link: $("a#test"),
 		go_link: $("a#go"),
 		next_link: $("a#next"),
-		show_user_link: $("a#show-user"),
 		show_photo_link: $("a#show-photo"),
 
 		// display
@@ -59,16 +57,8 @@ var client = {
 			self.socket.emit("next");
 			self.dom.resultsMain.text("next...");
 		});
-		this.dom.show_user_link.click(function() {
-			self.dom.results.fadeOut(function() {
-				self.dom.img.fadeIn();
-			});
-		});
 		this.dom.show_photo_link.click(function() {
 			self.socket.emit("photo");
-
-			self.dom.img.hide();
-			self.dom.resultsMain.text("loading photo...");
 		});
 		this.listen();
 	},
@@ -86,37 +76,13 @@ var client = {
 		});
 		this.socket.on('twitter_result', function (data) {
 			console.log("received twitter msg", data);
-			self.data.twitter_result = data;
-
 			self.dom.resultsMain.html(data.text);
 			self.dom.resultsFooter.html("@" + data.from_user
 					+ "<br>" + $.timeago(data.created_at)
 					+ "<br>" + data.words);
-
-			// pre-load img
-			var img = $("<img>", {
-				src: self.data.twitter_result.profile_image_url,
-				width: 960,
-				height: 400,
-			});
-			self.dom.img.html(img);
 		});
-		this.socket.on('photo', function (data) {
-			console.log("received photo", data);
-			self.dom.results.text(data);
-
-			// pre-load img
-			var img = null;
-			img = $("<img>", {
-				src: data,
-				width: 960,
-				height: 400,
-				load: function(foo) {
-					self.dom.img.html(img);
-					self.dom.results.hide();
-					self.dom.img.show();
-				},
-			});
+		this.socket.on('photo', function (photoUrl) {
+			$.backstretch(photoUrl, {speed: 500});
 		});
 
 	},

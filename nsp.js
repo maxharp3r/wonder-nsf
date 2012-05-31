@@ -17,17 +17,17 @@ this.data = {
 	// for testing
 	photo_idx: 0,
 	photos: [
-		"http://farm6.staticflickr.com/5449/7193512948_324214f54a.jpg",
-		"http://farm8.staticflickr.com/7072/7193515044_1cca6a1aa8.jpg",
-		"http://farm8.staticflickr.com/7073/7193548928_eb650714e0.jpg",
-		"http://farm8.staticflickr.com/7074/7193525262_d1a1c25745.jpg",
-		"http://farm8.staticflickr.com/7081/7193525710_764767d99b.jpg",
-		"http://farm9.staticflickr.com/8147/7193557318_459a203d02.jpg",
-		"http://farm8.staticflickr.com/7216/7193553084_d66a82baf9.jpg",
-		"http://farm9.staticflickr.com/8158/7193501630_fc49b8eb88.jpg",
-		"http://farm9.staticflickr.com/8146/7193499524_0ae85367c1.jpg",
-		"http://farm8.staticflickr.com/7098/7193477844_8e9e4487a1.jpg",
-		"http://farm8.staticflickr.com/7213/7193497660_87ab659530.jpg",
+//		"http://farm6.staticflickr.com/5449/7193512948_324214f54a.jpg",
+//		"http://farm8.staticflickr.com/7072/7193515044_1cca6a1aa8.jpg",
+//		"http://farm8.staticflickr.com/7073/7193548928_eb650714e0.jpg",
+//		"http://farm8.staticflickr.com/7074/7193525262_d1a1c25745.jpg",
+//		"http://farm8.staticflickr.com/7081/7193525710_764767d99b.jpg",
+//		"http://farm9.staticflickr.com/8147/7193557318_459a203d02.jpg",
+//		"http://farm8.staticflickr.com/7216/7193553084_d66a82baf9.jpg",
+//		"http://farm9.staticflickr.com/8158/7193501630_fc49b8eb88.jpg",
+//		"http://farm9.staticflickr.com/8146/7193499524_0ae85367c1.jpg",
+//		"http://farm8.staticflickr.com/7098/7193477844_8e9e4487a1.jpg",
+//		"http://farm8.staticflickr.com/7213/7193497660_87ab659530.jpg",
 	],
 };
 
@@ -149,14 +149,20 @@ this.photo = function() {
  *
  * TODO
  */
-/*
 // http://www.flickr.com/services/api/
 // http://www.flickr.com/services/api/misc.urls.html
 var FlickrAPI= require('flickrnode').FlickrAPI;
 var flickr= new FlickrAPI(keys.flickr.key, keys.flickr.secret);
 
 // Search for photos with a tag of 'badgers'
-flickr.photos.search({tags:'beach'},  function(error, results) {
+var self = this;
+var searchOpts = {
+	// text: 'let',
+	tags: 'still',
+	//sort: "interestingness-desc",
+	sort: "date-posted-desc",
+};
+flickr.photos.search(searchOpts,  function(error, results) {
 
 	console.log(results);
 
@@ -167,6 +173,6 @@ flickr.photos.search({tags:'beach'},  function(error, results) {
 			"_" + result.secret +
 			".jpg";
 		console.log(url);
+		self.data.photos.push(url);
 	});
 });
-*/
