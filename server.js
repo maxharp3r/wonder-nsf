@@ -79,6 +79,13 @@ io.sockets.on('connection', function (socket) {
 			socket.emit("photo", data);
 		});
 	});
+
+	socket.on("color", function() {
+		console.log("got color");
+		var color = nsp.color();
+		socket.emit("color", color);
+		console.log("emit " + color);
+	});
 });
 
 // handle server-side events

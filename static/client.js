@@ -1,4 +1,6 @@
 
+var FADE_TIME = 500;
+
 var utils = {
 
 	// from http://webcloud.se/log/JavaScript-and-ISO-8601/
@@ -25,13 +27,15 @@ var client = {
 
 	dom: {
 		// general
+		html: $("html"),
 		body: $("body"),
 
 		// controls
 		test_link: $("a#test"),
 		go_link: $("a#go"),
-		next_link: $("a#next"),
-		show_photo_link: $("a#show-photo"),
+		next_msg_link: $("a#next-msg"),
+		next_photo_link: $("a#next-photo"),
+		next_color_link: $("a#next-color"),
 
 		// display
 		results: $("div#results"),
@@ -44,21 +48,18 @@ var client = {
 		var self = this;
 		this.dom.test_link.click(function() {
 			self.socket.emit("test");
-			self.dom.resultsMain.text("waiting for twitter...");
 		});
 		this.dom.go_link.click(function() {
 			self.socket.emit("go");
-			self.dom.resultsMain.text("searching...");
 		});
-		this.dom.next_link.click(function() {
-			self.dom.img.hide();
-			self.dom.results.show();
-
+		this.dom.next_msg_link.click(function() {
 			self.socket.emit("next");
-			self.dom.resultsMain.text("next...");
 		});
-		this.dom.show_photo_link.click(function() {
+		this.dom.next_photo_link.click(function() {
 			self.socket.emit("photo");
+		});
+		this.dom.next_color_link.click(function() {
+			self.socket.emit("color");
 		});
 		this.listen();
 	},
@@ -67,24 +68,36 @@ var client = {
 		var self = this;
 		this.socket = io.connect('http://localhost:8080');
 		this.socket.on('test', function (data) {
-			console.log("received test", data);
 			self.dom.resultsMain.text("twitter says my username is: " + data.screen_name);
 		});
 		this.socket.on('twitter', function (data) {
-			console.log("received twitter", data);
 			self.dom.resultsMain.text("got " + data + " results");
 		});
 		this.socket.on('twitter_result', function (data) {
-			console.log("received twitter msg", data);
+			self.clearPhoto();
+
+			self.dom.results.hide(); // REMOVE ME
 			self.dom.resultsMain.html(data.text);
 			self.dom.resultsFooter.html("@" + data.from_user
 					+ "<br>" + $.timeago(data.created_at)
 					+ "<br>" + data.words);
+			self.dom.results.fadeIn(FADE_TIME);
 		});
 		this.socket.on('photo', function (photoUrl) {
-			$.backstretch(photoUrl, {speed: 500});
+			$('#backstretch').fadeIn(FADE_TIME);
+			$.backstretch(photoUrl, {speed: FADE_TIME});
+		});
+		this.socket.on('color', function (color) {
+			self.clearPhoto();
+			self.dom.html.animate({ backgroundColor: color }, FADE_TIME);
 		});
 
+	},
+
+	clearPhoto: function() {
+		$('#backstretch').fadeOut(FADE_TIME, function() {
+			$.backstretch("/static/transparent.png");
+		});
 	},
 };
 

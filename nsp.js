@@ -29,6 +29,12 @@ this.data = {
 //		"http://farm8.staticflickr.com/7098/7193477844_8e9e4487a1.jpg",
 //		"http://farm8.staticflickr.com/7213/7193497660_87ab659530.jpg",
 	],
+
+	color_idx: 0,
+	colors: [
+		"#000",
+		"#900", // red
+	],
 };
 
 this.init = function() {
@@ -143,6 +149,11 @@ this.photo = function() {
 	return this.data.photos[this.data.photo_idx++];
 };
 
+this.color = function() {
+	this.data.color_idx = ((this.data.color_idx + 1) % this.data.colors.length);
+	return this.data.colors[this.data.color_idx];
+};
+
 
 
 /*
@@ -158,7 +169,7 @@ var flickr= new FlickrAPI(keys.flickr.key, keys.flickr.secret);
 var self = this;
 var searchOpts = {
 	// text: 'let',
-	tags: 'still',
+	tags: 'minneapolis',
 	//sort: "interestingness-desc",
 	sort: "date-posted-desc",
 };

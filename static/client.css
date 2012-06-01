@@ -3,7 +3,7 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 
 /* custom */
 
-html { background:#900; color:#fff; font-family: 'Helvetica Neue', 'Helvetica', sans-serif; }
+html { background:#000; color:#fff; font-family: 'Helvetica Neue', 'Helvetica', sans-serif; }
 body { text-align: center; }
 
 header {background: white; color:black; text-align:left; padding:2px; font-family: Monaco; font-size: 12pt; }
