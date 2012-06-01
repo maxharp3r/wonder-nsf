@@ -32,7 +32,7 @@ var appState = {
 	numConnected: 0,
 	socketsById: {}, // map id to websocket
 };
-nsp.init();
+
 
 // handle socket connections and messages
 // docs: https://github.com/learnboost/socket.io
@@ -96,5 +96,7 @@ db.on("message", function (channel, data) {
 db.subscribe("nsp:event_stream");
 
 
-
+// run
+nsp.init();
+// nsp.goFlickr("art");
 

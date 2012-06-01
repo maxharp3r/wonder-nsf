@@ -1,6 +1,7 @@
 
 var $ = require('jquery');
 var ntwitter = require('ntwitter');
+var flickrnode = require('flickrnode').FlickrAPI;
 var redis = require("redis");
 var underscore = require("./static/lib/underscore-1.3.1-min");
 
@@ -11,25 +12,15 @@ this.nTwitterApi = null;
 
 
 this.data = {
+	// twitter messages
 	result_idx: 0,
 	results: [],
 
-	// for testing
+	// photos
 	photo_idx: 0,
-	photos: [
-//		"http://farm6.staticflickr.com/5449/7193512948_324214f54a.jpg",
-//		"http://farm8.staticflickr.com/7072/7193515044_1cca6a1aa8.jpg",
-//		"http://farm8.staticflickr.com/7073/7193548928_eb650714e0.jpg",
-//		"http://farm8.staticflickr.com/7074/7193525262_d1a1c25745.jpg",
-//		"http://farm8.staticflickr.com/7081/7193525710_764767d99b.jpg",
-//		"http://farm9.staticflickr.com/8147/7193557318_459a203d02.jpg",
-//		"http://farm8.staticflickr.com/7216/7193553084_d66a82baf9.jpg",
-//		"http://farm9.staticflickr.com/8158/7193501630_fc49b8eb88.jpg",
-//		"http://farm9.staticflickr.com/8146/7193499524_0ae85367c1.jpg",
-//		"http://farm8.staticflickr.com/7098/7193477844_8e9e4487a1.jpg",
-//		"http://farm8.staticflickr.com/7213/7193497660_87ab659530.jpg",
-	],
+	photos: [],
 
+	// background colors
 	color_idx: 0,
 	colors: [
 		"#000",
@@ -52,6 +43,11 @@ this.init = function() {
 		access_token_key: keys.twitter.access_token_key,
 		access_token_secret: keys.twitter.access_token_secret
 	});
+
+	// flickr api
+	// http://www.flickr.com/services/api/
+	// http://www.flickr.com/services/api/misc.urls.html
+	this.flickrApi = new flickrnode(keys.flickr.key, keys.flickr.secret);
 };
 
 this.test = function() {
@@ -76,6 +72,7 @@ this.go = function() {
 	var searchString = encodeURIComponent('"I wonder"');
 	console.log("search for ", searchString);
 	this.nTwitterApi.search(searchString, {rpp: 100}, function(err, data) {
+		found = 0;
 		underscore.chain(data.results)
 			.filter(function(result) {
 				// only want tweets that /start with/ I wonder
@@ -83,6 +80,7 @@ this.go = function() {
 			})
 			.reverse() // reverse the default order - we want old to new
 			.each(function(result) {
+				found++;
 
 				// get the interesting words
 				var words = result.text.substr(8).split(/[^a-zA-Z]/);
@@ -112,6 +110,8 @@ this.go = function() {
 				self.db.ltrim("nsp:twitter:msg", 0, 99); // keep up to 100 messages
 		});
 
+		console.log("twitter search for I wonder found " + found + " messages.");
+
 		self.db.llen("nsp:twitter:msg", function (err, res) {
 			deferred.resolve(res);
 		});
@@ -130,14 +130,26 @@ this.next = function() {
 		var result = JSON.parse(res);
 		result.words = [];
 
+		// look for the scored words
 		var key = "nsp:twitter:msg:" + result.id + ":words";
 		console.log("(looking)");
-		self.db.zrevrange(key, 0, -1, function(err, words) {
-			underscore.each(words, function(word) {
-				result.words.push(word);
-				console.log("XXX: " + word);
-			});
+		self.db.zrevrange(key, 0, -1, "WITHSCORES", function(err, words) {
+
+			if (words.length > 0) {
+				self.goFlickr(words[0]);
+			}
+
+			while (!underscore.isEmpty(words)) {
+				var score = words.pop();
+				var word = words.pop();
+
+				var msg = word + " (" + score + ")";
+				console.log("XXX", msg);
+				result.words.push(msg);
+			}
 			deferred.resolve(result);
+
+
 		});
 
 	});
@@ -154,36 +166,26 @@ this.color = function() {
 	return this.data.colors[this.data.color_idx];
 };
 
+this.goFlickr = function(tag) {
+	var self = this;
 
-
-/*
- *
- * TODO
- */
-// http://www.flickr.com/services/api/
-// http://www.flickr.com/services/api/misc.urls.html
-var FlickrAPI= require('flickrnode').FlickrAPI;
-var flickr= new FlickrAPI(keys.flickr.key, keys.flickr.secret);
-
-// Search for photos with a tag of 'badgers'
-var self = this;
-var searchOpts = {
-	// text: 'let',
-	tags: 'minneapolis',
-	//sort: "interestingness-desc",
-	sort: "date-posted-desc",
-};
-flickr.photos.search(searchOpts,  function(error, results) {
-
-	console.log(results);
-
-	underscore.each(results.photo, function(result) {
-		var url = "http://farm" + result.farm +
-			".staticflickr.com/" + result.server +
-			"/" + result.id +
-			"_" + result.secret +
-			".jpg";
-		console.log(url);
-		self.data.photos.push(url);
+	var searchOpts = {
+		tags: tag,
+		//sort: "interestingness-desc",
+		//sort: "date-posted-desc",
+		sort: "relevance",
+	};
+	this.flickrApi.photos.search(searchOpts,  function(error, results) {
+		self.data.photos = [];
+		console.log("Flickr search for " + tag + " found " + results.photo.length + " photos.");
+		underscore.each(results.photo, function(result) {
+			var url = "http://farm" + result.farm +
+				".staticflickr.com/" + result.server +
+				"/" + result.id +
+				"_" + result.secret +
+				".jpg";
+			// console.log(url);
+			self.data.photos.push(url);
+		});
 	});
-});
+};
