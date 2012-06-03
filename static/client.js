@@ -38,10 +38,11 @@ var client = {
 		next_color_link: $("a#next-color"),
 
 		// display
+		content: $("div#content"),
 		results: $("div#results"),
 		resultsMain: $(".main", this.results),
 		resultsFooter: $(".footer", this.results),
-		img: $("div#img"),
+		word: $("div#word", this.content),
 	},
 
 	init: function() {
@@ -83,18 +84,29 @@ var client = {
 					+ "<br>" + data.words);
 			self.dom.results.fadeIn(FADE_TIME);
 		});
-		this.socket.on('photo', function (photoUrl) {
+		this.socket.on('photo', function (photoData) {
+			var photoUrl = photoData['url'];
+			var photoWord = photoData['word'];
+
+			self.clearText();
 			$('#backstretch').fadeIn(FADE_TIME);
 			$.backstretch(photoUrl, {speed: FADE_TIME});
+
+			self.dom.word.text(photoWord).fadeIn(FADE_TIME);
 		});
 		this.socket.on('color', function (color) {
+			self.clearText();
 			self.clearPhoto();
 			self.dom.html.animate({ backgroundColor: color }, FADE_TIME);
 		});
+	},
 
+	clearText: function() {
+		this.dom.results.fadeOut(FADE_TIME);
 	},
 
 	clearPhoto: function() {
+		this.dom.word.fadeOut(FADE_TIME);
 		$('#backstretch').fadeOut(FADE_TIME, function() {
 			$.backstretch("/static/transparent.png");
 		});

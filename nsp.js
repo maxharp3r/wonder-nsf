@@ -6,6 +6,7 @@ var redis = require("redis");
 var underscore = require("./static/lib/underscore-1.3.1-min");
 
 var keys = require('./keys.js'); // private
+var utils = require('./utils.js');
 
 this.db = null;
 this.nTwitterApi = null;
@@ -17,6 +18,7 @@ this.data = {
 	results: [],
 
 	// photos
+	photo_current_word: "",
 	photo_idx: 0,
 	photos: [],
 
@@ -97,21 +99,17 @@ this.go = function() {
 								self.db.zadd(key, res, word);
 								self.db.expire(key, 36000); // 10 hours
 							}
-							// console.log("word: " + word + " => " + res);
 						});
 					}
 				});
 
 				// rpush message - oldest <==> newest
 				self.db.rpush("nsp:twitter:msg", JSON.stringify(result));
-				self.db.llen("nsp:twitter:msg", function (err, res) {
-					// console.log("LEN: " + res);
-				});
 				self.db.ltrim("nsp:twitter:msg", 0, 99); // keep up to 100 messages
 		});
-
 		console.log("twitter search for I wonder found " + found + " messages.");
 
+		// return the current length of the queue
 		self.db.llen("nsp:twitter:msg", function (err, res) {
 			deferred.resolve(res);
 		});
@@ -132,9 +130,7 @@ this.next = function() {
 
 		// look for the scored words
 		var key = "nsp:twitter:msg:" + result.id + ":words";
-		console.log("(looking)");
 		self.db.zrevrange(key, 0, -1, "WITHSCORES", function(err, words) {
-
 			if (words.length > 0) {
 				self.goFlickr(words[0]);
 			}
@@ -144,28 +140,40 @@ this.next = function() {
 				var word = words.pop();
 
 				var msg = word + " (" + score + ")";
-				console.log("XXX", msg);
 				result.words.push(msg);
 			}
 			deferred.resolve(result);
-
-
 		});
-
 	});
 	return deferred;
-	// return this.data.results[this.data.result_idx++];
 };
 
+/**
+ * Get the next photo.
+ */
 this.photo = function() {
-	return this.data.photos[this.data.photo_idx++];
+	if (this.data.photos.length === 0) {
+		return;
+	}
+
+	var idx = utils.getRandomInt(0, this.data.photos.length - 1);
+	return {
+		url: this.data.photos[idx],
+		word: this.data.photo_current_word,
+	};
 };
 
+/**
+ * Get the next background color.
+ */
 this.color = function() {
 	this.data.color_idx = ((this.data.color_idx + 1) % this.data.colors.length);
 	return this.data.colors[this.data.color_idx];
 };
 
+/**
+ * Run a flickr search for a tag.
+ */
 this.goFlickr = function(tag) {
 	var self = this;
 
@@ -176,6 +184,7 @@ this.goFlickr = function(tag) {
 		sort: "relevance",
 	};
 	this.flickrApi.photos.search(searchOpts,  function(error, results) {
+		self.data.photo_current_word = tag;
 		self.data.photos = [];
 		console.log("Flickr search for " + tag + " found " + results.photo.length + " photos.");
 		underscore.each(results.photo, function(result) {
@@ -184,7 +193,6 @@ this.goFlickr = function(tag) {
 				"/" + result.id +
 				"_" + result.secret +
 				".jpg";
-			// console.log(url);
 			self.data.photos.push(url);
 		});
 	});
