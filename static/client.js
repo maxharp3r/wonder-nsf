@@ -1,4 +1,7 @@
 
+//var SERVER_URL = 'http://localhost:8080';
+var SERVER_URL = 'http://192.168.0.5:8080';
+
 var FADE_TIME = 500;
 
 var utils = {
@@ -67,7 +70,7 @@ var client = {
 
 	listen: function() {
 		var self = this;
-		this.socket = io.connect('http://localhost:8080');
+		this.socket = io.connect(SERVER_URL);
 		this.socket.on('test', function (data) {
 			self.dom.resultsMain.text("twitter says my username is: " + data.screen_name);
 		});
@@ -85,14 +88,14 @@ var client = {
 			self.dom.results.fadeIn(FADE_TIME);
 		});
 		this.socket.on('photo', function (photoData) {
-			var photoUrl = photoData['url'];
-			var photoWord = photoData['word'];
-
 			self.clearText();
-			$('#backstretch').fadeIn(FADE_TIME);
-			$.backstretch(photoUrl, {speed: FADE_TIME});
+			if (photoData === null) {
+				return;
+			}
 
-			self.dom.word.text(photoWord).fadeIn(FADE_TIME);
+			$('#backstretch').fadeIn(FADE_TIME);
+			$.backstretch(photoData['url'], {speed: FADE_TIME});
+			self.dom.word.text(photoData['word']).fadeIn(FADE_TIME);
 		});
 		this.socket.on('color', function (color) {
 			self.clearText();

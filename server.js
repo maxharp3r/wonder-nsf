@@ -69,7 +69,7 @@ io.sockets.on('connection', function (socket) {
 			socket.emit("twitter_result", data);
 			// socket.broadcast.emit("twitter_result", data);
 			// socket.broadcast.to("all").emit("twitter_result", data);
-			console.log("NEXT", data);
+			// console.log("NEXT", data);
 			// io.sockets.in("all").emit("twitter_result", data);
 		});
 	});

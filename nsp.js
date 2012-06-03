@@ -27,6 +27,7 @@ this.data = {
 	colors: [
 		"#000",
 		"#900", // red
+		"#990", // yellow
 	],
 };
 
@@ -133,6 +134,8 @@ this.next = function() {
 		self.db.zrevrange(key, 0, -1, "WITHSCORES", function(err, words) {
 			if (words.length > 0) {
 				self.goFlickr(words[0]);
+			} else {
+				self.data.photo_current_word = null;
 			}
 
 			while (!underscore.isEmpty(words)) {
@@ -152,7 +155,7 @@ this.next = function() {
  * Get the next photo.
  */
 this.photo = function() {
-	if (this.data.photos.length === 0) {
+	if (this.data.photos.length === 0 || this.data.photo_current_word === null) {
 		return;
 	}
 
