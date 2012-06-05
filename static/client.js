@@ -1,6 +1,6 @@
 
-//var SERVER_URL = 'http://localhost:8080';
-var SERVER_URL = 'http://192.168.0.5:8080';
+var SERVER_URL = 'http://localhost:8080';
+//var SERVER_URL = 'http://192.168.11.207:8080';
 
 var FADE_TIME = 500;
 
@@ -25,6 +25,20 @@ var utils = {
 	},
 };
 
+// underscore templates
+var tmpl = {
+	results: "\
+		<div class='tmpl results'>\
+			<div class='main big-text'><%= data.text %></div>\
+			<div class='footer small-text'>\
+				<div><%= data.from_user %></div>\
+				<div><%= $.timeago(data.created_at) %></div>\
+				<div><%= data.words %></div>\
+			</div>\
+		</div>\
+	",
+};
+
 var client = {
 	socket: null,
 
@@ -42,7 +56,7 @@ var client = {
 
 		// display
 		content: $("div#content"),
-		results: $("div#results"),
+		results: $("div.results"),
 		resultsMain: $(".main", this.results),
 		resultsFooter: $(".footer", this.results),
 		word: $("div#word", this.content),
@@ -80,21 +94,24 @@ var client = {
 		this.socket.on('twitter_result', function (data) {
 			self.clearPhoto();
 
-			self.dom.results.hide(); // REMOVE ME
-			self.dom.resultsMain.html(data.text);
-			self.dom.resultsFooter.html("@" + data.from_user
-					+ "<br>" + $.timeago(data.created_at)
-					+ "<br>" + data.words);
-			self.dom.results.fadeIn(FADE_TIME);
+			var output = _.template(tmpl.results, {data: data,});
+			$("#one").html(output);
+			$("#one .tmpl").fadeIn(FADE_TIME);
 		});
 		this.socket.on('photo', function (photoData) {
 			self.clearText();
 			if (photoData === null) {
+				console.log("null photoData");
 				return;
 			}
 
 			$('#backstretch').fadeIn(FADE_TIME);
-			$.backstretch(photoData['url'], {speed: FADE_TIME});
+			$.backstretch(photoData['url'], {
+				target: "#two",
+				speed: FADE_TIME,
+				positionType: "relative",
+				zIndex: 99,
+			});
 			self.dom.word.text(photoData['word']).fadeIn(FADE_TIME);
 		});
 		this.socket.on('color', function (color) {

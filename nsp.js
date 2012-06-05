@@ -127,12 +127,17 @@ this.next = function() {
 	// lpop message (oldest message)
 	this.db.lpop("nsp:twitter:msg", function(err, res) {
 		var result = JSON.parse(res);
+		if (result == null) {
+			return;
+		}
 		result.words = [];
 
 		// look for the scored words
 		var key = "nsp:twitter:msg:" + result.id + ":words";
 		self.db.zrevrange(key, 0, -1, "WITHSCORES", function(err, words) {
-			if (words.length > 0) {
+			if (words.length > 2) {
+				self.goFlickr(words[0] + "," + words[2]);
+			} else if (words.length > 0) {
 				self.goFlickr(words[0]);
 			} else {
 				self.data.photo_current_word = null;
@@ -159,7 +164,12 @@ this.photo = function() {
 		return;
 	}
 
-	var idx = utils.getRandomInt(0, this.data.photos.length - 1);
+	// random
+	//var idx = utils.getRandomInt(0, this.data.photos.length - 1);
+
+	// in order
+	var idx = this.data.photo_idx++;
+
 	return {
 		url: this.data.photos[idx],
 		word: this.data.photo_current_word,
@@ -188,6 +198,8 @@ this.goFlickr = function(tag) {
 	};
 	this.flickrApi.photos.search(searchOpts,  function(error, results) {
 		self.data.photo_current_word = tag;
+		self.data.photo_idx = 0;
+
 		self.data.photos = [];
 		console.log("Flickr search for " + tag + " found " + results.photo.length + " photos.");
 		underscore.each(results.photo, function(result) {

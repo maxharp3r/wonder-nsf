@@ -13,32 +13,42 @@ header {background: white; color:black; text-align:left; padding:2px; font-famil
 /* style */
 
 .big-text {
-	font-size:48pt;
+	font-size:28pt;
 	font-weight: 500;
 }
 
 .small-text {
-	font-size:24pt;
+	font-size:14pt;
 	font-weight: normal;
 }
 
+.tmpl {
+	display: none;
+}
 
 /* structure */
 
 #content {
 	text-align: left;
-	margin: 0 auto;
-	width:880px;
+	/* margin: 20px auto 0; */
+/*	width:1000px;*/
 	height: 520px; /* max 768 */
 	overflow: hidden;
 }
 
-#results {
+#one, #two, #three {
+	height: 520px;
+	/* background: blue; */
+	overflow: hidden;
 }
-#results .main {
-	margin-top: 1em;
+
+.results {
+	/* width: 300px; */
 }
-#results .footer {
+.results .main {
+	/*margin-top: 1em; */
+}
+.results .footer {
 	margin-top: 1em;
 	line-height: 1.5em;
 }
@@ -47,4 +57,19 @@ header {background: white; color:black; text-align:left; padding:2px; font-famil
 	text-align: center;
 	margin-top: 200px;
 	width:880px;
+}
+
+
+/* photo */
+.photo-div {
+	left: 0px; top: 0px; position: fixed; overflow: hidden; z-index: -999999;
+	margin: 0px; padding: 0px;
+	width: 1421px;
+	height: 516px;
+}
+.photo-div img {
+	position: absolute; margin: 0px; padding: 0px; border: none; z-index: -999999;
+	width: 1421px;
+	height: 946.3860000000001px;
+	left: 0px; top: -215.19300000000004px;
 }
