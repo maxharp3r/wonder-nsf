@@ -30,7 +30,7 @@
             zIndex: '-999999',           // Option to pass in z-index value, if backstretch is being applied to a normal DIV this can be useful
             speed: 0                     // fadeIn speed for background after image loads (e.g. "fast" or 500)
         },
-        container        = $(".backstretch"),
+        container        = $(options.target).find(".backstretch"),
         settings         = container.data("settings") || defaultSettings, // If this has been called once before, use the old settings as the default
         existingSettings = container.data('settings'),
         imgRatio, bgImg, bgWidth, bgHeight, bgOffset, bgCSS;
@@ -122,7 +122,7 @@
                     if(settings.centeredX) $.extend(bgCSS, {left: "-" + bgOffset + "px"});
                 }
 
-                $(".backstretch, .backstretch img:last").width( bgWidth ).height( bgHeight )
+                $(".backstretch, .backstretch img:last", container.parent()).width( bgWidth ).height( bgHeight )
                                                         .filter("img").css(bgCSS);
             } catch(err) {
                 // IE7 seems to trigger _adjustBG before the image is loaded.

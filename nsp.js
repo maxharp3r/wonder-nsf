@@ -9,6 +9,8 @@ var keys = require('./keys.js'); // private
 var utils = require('./utils.js');
 
 
+var NUM_PANELS = 3;
+
 this.db = null;
 this.nTwitterApi = null;
 
@@ -211,4 +213,13 @@ this.nextFlickr = function() {
 this.color = function() {
 	this.data.color_idx = ((this.data.color_idx + 1) % this.data.colors.length);
 	return this.data.colors[this.data.color_idx];
+};
+
+/**
+ * Get the next panel for display.
+ */
+this.nextDisplayPosition = function() {
+	var screen = 1; // TODO
+	var panel = utils.getRandomInt(0, NUM_PANELS-1);
+	return {displayScreen: screen, displayPanel: panel};
 };

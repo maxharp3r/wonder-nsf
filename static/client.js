@@ -4,27 +4,6 @@ var SERVER_URL = 'http://localhost:8080';
 
 var FADE_TIME = 500;
 
-var utils = {
-
-	// from http://webcloud.se/log/JavaScript-and-ISO-8601/
-	dateToIsoString: function(d) {
-		function pad(n) {
-			return n < 10 ? '0'+n : n;
-		};
-		return d.getUTCFullYear()+'-'
-			+ pad(d.getUTCMonth()+1)+'-'
-			+ pad(d.getUTCDate())+'T'
-			+ pad(d.getUTCHours())+':'
-			+ pad(d.getUTCMinutes())+':'
-			+ pad(d.getUTCSeconds())+'Z';
-	},
-
-	twitterDateToIso: function(twitterDate) {
-		var d = $.timeago.parse(twitterDate);
-		return this.dateToIsoString(d);
-	},
-};
-
 // underscore templates
 var tmpl = {
 	results: "\
@@ -61,11 +40,18 @@ var client = {
 		next_color_link: $("a#next-color"),
 
 		// display
+		panels: [
+			"#one",
+			"#two",
+			"#three",
+		],
+		getPanelId: function(idx) { return this.panels[idx];},
 		content: $("div#content"),
 		results: $("div.results"),
 		resultsMain: $(".main", this.results),
 		resultsFooter: $(".footer", this.results),
 		word: $("div#word", this.content),
+
 	},
 
 	init: function() {
@@ -99,32 +85,32 @@ var client = {
 		});
 		this.socket.on('nextTwitter', function (data) {
 			self.clearPhoto();
+			// console.log("next twitter: ", data);
 
+			var baseId = self.dom.getPanelId(data.displayPanel);
 			var output = _.template(tmpl.results, {data: data,});
-			$("#one").html(output);
-			$("#one .tmpl").fadeIn(FADE_TIME);
+			$(baseId).html(output);
+			$(baseId + " .tmpl").fadeIn(FADE_TIME);
 		});
-		this.socket.on('nextFlickr', function (photoData) {
+		this.socket.on('nextFlickr', function (data) {
 			self.clearText();
-			if (photoData === null) {
-				console.log("null photoData");
+			if (data === null) {
+				console.log("null photo data");
 				return;
 			}
-			console.log("next flickr: ", photoData.word, photoData.url);
+			// console.log("next flickr: ", data.word, data.url);
 
-			// var baseEl = $("#two");
-			var output = _.template(tmpl.word, {word: photoData.word});
-			$("#two").html(output);
-			$("#two .tmpl").fadeIn(FADE_TIME);
+			var baseId = self.dom.getPanelId(data.displayPanel);
+			var output = _.template(tmpl.word, {word: data.word});
+			$(baseId).html(output);
+			$(baseId).find(".tmpl").fadeIn(FADE_TIME);
 
-			$('#backstretch').fadeIn(FADE_TIME);
-			$.backstretch(photoData['url'], {
-				target: "#two",
+			$.backstretch(data['url'], {
+				target: baseId,
 				speed: FADE_TIME,
 				positionType: "relative",
 				zIndex: 10,
 			});
-			self.dom.word.text(photoData['word']).fadeIn(FADE_TIME);
 		});
 		this.socket.on('nextColor', function (color) {
 			self.clearText();

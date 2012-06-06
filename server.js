@@ -65,7 +65,9 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	socket.on("nextTwitter", function() {
+		var displayPosition = nsp.nextDisplayPosition();
 		$.when(nsp.nextTwitter()).done(function(data) {
+			$.extend(data, displayPosition);
 			socket.emit("nextTwitter", data);
 			// socket.broadcast.emit("twitter_result", data);
 			// socket.broadcast.to("all").emit("twitter_result", data);
@@ -75,7 +77,9 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	socket.on("nextFlickr", function() {
+		var displayPosition = nsp.nextDisplayPosition();
 		$.when(nsp.nextFlickr()).done(function(data) {
+			$.extend(data, displayPosition);
 			socket.emit("nextFlickr", data);
 		});
 	});
