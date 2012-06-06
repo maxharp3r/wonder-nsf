@@ -30,33 +30,35 @@ header {background: white; color:black; text-align:left; padding:2px; font-famil
 
 #content {
 	text-align: left;
-	/* margin: 20px auto 0; */
-/*	width:1000px;*/
 	height: 520px; /* max 768 */
 	overflow: hidden;
 }
 
 #one, #two, #three {
 	height: 520px;
-	/* background: blue; */
 	overflow: hidden;
 }
 
 .results {
-	/* width: 300px; */
 }
 .results .main {
-	/*margin-top: 1em; */
 }
 .results .footer {
 	margin-top: 1em;
 	line-height: 1.5em;
 }
 
-#word {
+.word {
+	position: absolute;
+	top: 200px;
+	left: 0;
 	text-align: center;
-	margin-top: 200px;
-	width:880px;
+	width: 100%;
+	z-index: 20;
+
+	/*text-align: center;
+	margin-top: 200px;*/
+	/*width:880px;*/
 }
 
 

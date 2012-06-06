@@ -38,14 +38,14 @@ var appState = {
 // docs: https://github.com/learnboost/socket.io
 // TODO: how to configure socket.io to be resilient to exceptions?
 io.sockets.on('connection', function (socket) {
-	console.log("connect", socket.id);
+	// console.log("connect", socket.id);
 
 	socket.join('all');
 	appState.numConnected++;
 	appState.socketsById[socket.id] = socket;
 
 	socket.on('disconnect', function () {
-		console.log("disconnect", socket.id);
+		// console.log("disconnect", socket.id);
 		appState.numConnected--;
 		delete appState.socketsById[socket.id];
 	});
@@ -56,17 +56,17 @@ io.sockets.on('connection', function (socket) {
 		});
 	});
 
-	socket.on("go", function() {
-		$.when(nsp.go()).done(function(data) {
+	socket.on("searchTwitter", function() {
+		$.when(nsp.searchTwitter()).done(function(data) {
 			console.log("found twitter data");
 			// socket.broadcast.emit("twitter", data);
-			socket.broadcast.to("all").emit("twitter", data);
+			socket.broadcast.to("all").emit("twitterSearchComplete", data);
 		});
 	});
 
-	socket.on("next", function() {
-		$.when(nsp.next()).done(function(data) {
-			socket.emit("twitter_result", data);
+	socket.on("nextTwitter", function() {
+		$.when(nsp.nextTwitter()).done(function(data) {
+			socket.emit("nextTwitter", data);
 			// socket.broadcast.emit("twitter_result", data);
 			// socket.broadcast.to("all").emit("twitter_result", data);
 			// console.log("NEXT", data);
@@ -74,16 +74,16 @@ io.sockets.on('connection', function (socket) {
 		});
 	});
 
-	socket.on("photo", function() {
-		$.when(nsp.photo()).done(function(data) {
-			socket.emit("photo", data);
+	socket.on("nextFlickr", function() {
+		$.when(nsp.nextFlickr()).done(function(data) {
+			socket.emit("nextFlickr", data);
 		});
 	});
 
-	socket.on("color", function() {
+	socket.on("nextColor", function() {
 		console.log("got color");
 		var color = nsp.color();
-		socket.emit("color", color);
+		socket.emit("nextColor", color);
 		console.log("emit " + color);
 	});
 });
@@ -98,5 +98,3 @@ db.subscribe("nsp:event_stream");
 
 // run
 nsp.init();
-// nsp.goFlickr("art");
-

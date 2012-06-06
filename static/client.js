@@ -37,6 +37,12 @@ var tmpl = {
 			</div>\
 		</div>\
 	",
+
+	word: "\
+		<div class='tmpl word big-text'>\
+			<div><%= word %></div>\
+		</div>\
+	",
 };
 
 var client = {
@@ -68,16 +74,16 @@ var client = {
 			self.socket.emit("test");
 		});
 		this.dom.go_link.click(function() {
-			self.socket.emit("go");
+			self.socket.emit("searchTwitter");
 		});
 		this.dom.next_msg_link.click(function() {
-			self.socket.emit("next");
+			self.socket.emit("nextTwitter");
 		});
 		this.dom.next_photo_link.click(function() {
-			self.socket.emit("photo");
+			self.socket.emit("nextFlickr");
 		});
 		this.dom.next_color_link.click(function() {
-			self.socket.emit("color");
+			self.socket.emit("nextColor");
 		});
 		this.listen();
 	},
@@ -88,33 +94,39 @@ var client = {
 		this.socket.on('test', function (data) {
 			self.dom.resultsMain.text("twitter says my username is: " + data.screen_name);
 		});
-		this.socket.on('twitter', function (data) {
+		this.socket.on('twitterSearchComplete', function (data) {
 			self.dom.resultsMain.text("got " + data + " results");
 		});
-		this.socket.on('twitter_result', function (data) {
+		this.socket.on('nextTwitter', function (data) {
 			self.clearPhoto();
 
 			var output = _.template(tmpl.results, {data: data,});
 			$("#one").html(output);
 			$("#one .tmpl").fadeIn(FADE_TIME);
 		});
-		this.socket.on('photo', function (photoData) {
+		this.socket.on('nextFlickr', function (photoData) {
 			self.clearText();
 			if (photoData === null) {
 				console.log("null photoData");
 				return;
 			}
+			console.log("next flickr: ", photoData.word, photoData.url);
+
+			// var baseEl = $("#two");
+			var output = _.template(tmpl.word, {word: photoData.word});
+			$("#two").html(output);
+			$("#two .tmpl").fadeIn(FADE_TIME);
 
 			$('#backstretch').fadeIn(FADE_TIME);
 			$.backstretch(photoData['url'], {
 				target: "#two",
 				speed: FADE_TIME,
 				positionType: "relative",
-				zIndex: 99,
+				zIndex: 10,
 			});
 			self.dom.word.text(photoData['word']).fadeIn(FADE_TIME);
 		});
-		this.socket.on('color', function (color) {
+		this.socket.on('nextColor', function (color) {
 			self.clearText();
 			self.clearPhoto();
 			self.dom.html.animate({ backgroundColor: color }, FADE_TIME);
