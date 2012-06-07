@@ -10,6 +10,7 @@ var utils = require('./utils.js');
 
 
 var NUM_PANELS = 3;
+var NUM_SCREENS = 3;
 var CHECK_TWITTER_HEALTH_MS = 10 * 1000; // check the state of the tracker every n millis
 var RATE_LIMIT_MS = 2 * 1000; // no more than 1 message every n millis
 
@@ -279,7 +280,7 @@ this.color = function() {
  * Get the next panel for display.
  */
 this.nextDisplayPosition = function() {
-	var screen = 1; // TODO
+	var screen = utils.getRandomInt(0, NUM_SCREENS-1) + 1;
 	var panel = utils.getRandomInt(0, NUM_PANELS-1);
 	return {displayScreen: screen, displayPanel: panel};
 };
