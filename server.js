@@ -102,3 +102,24 @@ db.subscribe("nsp:event_stream");
 
 // run
 nsp.init();
+
+var iteration = 0;
+setInterval(function() {
+	var displayPosition = nsp.nextDisplayPosition();
+	iteration++;
+
+	if (iteration % 4 === 0) {
+		// twitter
+		$.when(nsp.nextTwitter()).done(function(data) {
+			$.extend(data, displayPosition);
+			io.sockets.in("all").emit("nextTwitter", data);
+		});
+	} else {
+		// flickr
+		$.when(nsp.nextFlickr()).done(function(data) {
+			$.extend(data, displayPosition);
+			io.sockets.in("all").emit("nextFlickr", data);
+		});
+	}
+}, 2000);
+

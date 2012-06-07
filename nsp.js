@@ -10,12 +10,18 @@ var utils = require('./utils.js');
 
 
 var NUM_PANELS = 3;
+var CHECK_TWITTER_HEALTH_MS = 10 * 1000; // check the state of the tracker every n millis
+var RATE_LIMIT_MS = 2 * 1000; // no more than 1 message every n millis
 
 this.db = null;
 this.nTwitterApi = null;
 
 // application state
 this.data = {
+	// twitter api
+	isRunning: false, // twitter stream status
+	acceptMsg: false, // rate limit
+
 	// twitter messages
 	result_idx: 0,
 	results: [],
@@ -35,6 +41,8 @@ this.data = {
 };
 
 this.init = function() {
+	var self = this;
+
 	// db client
 	var db = redis.createClient();
 	db.on("error", function (err) {
@@ -47,13 +55,28 @@ this.init = function() {
 		consumer_key: keys.twitter.consumer_key,
 		consumer_secret: keys.twitter.consumer_secret,
 		access_token_key: keys.twitter.access_token_key,
-		access_token_secret: keys.twitter.access_token_secret
+		access_token_secret: keys.twitter.access_token_secret,
 	});
 
 	// flickr api
 	// http://www.flickr.com/services/api/
 	// http://www.flickr.com/services/api/misc.urls.html
 	this.flickrApi = new flickrnode(keys.flickr.key, keys.flickr.secret);
+
+	// kick-off the twitter tracker process
+	this.initTwitterStream();
+	// check health of twitter tracker
+	setInterval(function() {
+		if (self.data.isRunning !== true) {
+			console.log("TWITTER SEARCH DIED!");
+			self.initTwitterStream();
+		} else {
+			console.log("twitter tracker still running");
+		}
+	}, CHECK_TWITTER_HEALTH_MS);
+	setInterval(function() {
+		self.data.acceptMsg = true;
+	}, RATE_LIMIT_MS);
 };
 
 this.test = function() {
@@ -66,6 +89,65 @@ this.test = function() {
 		deferred.resolve(data);
 	});
 	return deferred.promise();
+};
+
+this.handleTweet = function(tweet) {
+	var self = this;
+
+	// get the interesting words
+	var words = tweet.text.substr(8).split(/[^a-zA-Z]/);
+	underscore.each(words, function(word) {
+		if (word.length > 2) {
+			word = word.toLowerCase();
+			self.db.zscore("nsp:words", word, function(err, res) {
+				if (err) {
+					return;
+				}
+
+				if (res > 1000) {
+					var key = "nsp:twitter:msg:" + tweet.id + ":words";
+					self.db.zadd(key, res, word);
+					self.db.expire(key, 36000); // 10 hours
+				}
+			});
+		}
+	});
+
+	// lpush message - newest <==> oldest
+	self.db.lpush("nsp:twitter:msg", JSON.stringify(tweet));
+	self.db.ltrim("nsp:twitter:msg", 0, 99); // keep the leftmost (newest) 100 messages
+};
+
+this.initTwitterStream = function() {
+	var self = this;
+	console.log("Initializing twitter stream");
+	this.data.isRunning = true;
+
+	// https://dev.twitter.com/docs/api/1/post/statuses/filter
+	this.nTwitterApi.stream('statuses/filter', {track:'I wonder,I think'}, function(stream) {
+		stream.on('data', function (data) {
+			if (data.text.match(/(^I wonder|^I think)/) && self.data.acceptMsg === true) {
+				self.data.acceptMsg = false;
+				console.log("TWITTER DATA", data.created_at, data.text);
+				self.handleTweet(data);
+			}
+		});
+		stream.on('error', function (error) {
+			// Handle a programming (?) error
+			console.log("TWITTER ERROR", error);
+			self.data.isRunning = false;
+		});
+		stream.on('end', function (response) {
+			// Handle a disconnection
+			console.log("TWITTER END");
+			self.data.isRunning = false;
+		});
+		stream.on('destroy', function (response) {
+			// Handle a 'silent' disconnection from Twitter, no end/error event fired
+			console.log("TWITTER DESTROY");
+			self.data.isRunning = false;
+		});
+	});
 };
 
 this.searchTwitter = function() {
@@ -83,32 +165,10 @@ this.searchTwitter = function() {
 				// only want tweets that /start with/ I wonder
 				return result.text.substr(0,8) === "I wonder";
 			})
-			.reverse() // reverse the default order - we want old to new
+			// .reverse() // reverse the default order - we want old to new
 			.each(function(result) {
 				found++;
-
-				// get the interesting words
-				var words = result.text.substr(8).split(/[^a-zA-Z]/);
-				underscore.each(words, function(word) {
-					if (word.length > 2) {
-						word = word.toLowerCase();
-						self.db.zscore("nsp:words", word, function(err, res) {
-							if (err) {
-								return;
-							}
-
-							if (res > 1000) {
-								var key = "nsp:twitter:msg:" + result.id + ":words";
-								self.db.zadd(key, res, word);
-								self.db.expire(key, 36000); // 10 hours
-							}
-						});
-					}
-				});
-
-				// rpush message - oldest <==> newest
-				self.db.rpush("nsp:twitter:msg", JSON.stringify(result));
-				self.db.ltrim("nsp:twitter:msg", 0, 99); // keep up to 100 messages
+				self.handleTweet(data);
 		});
 		console.log("twitter search for I wonder found " + found + " messages.");
 
@@ -155,8 +215,8 @@ this.nextTwitter = function() {
 	var self = this;
 	var deferred = new $.Deferred();
 
-	// lpop message (oldest message)
-	this.db.lpop("nsp:twitter:msg", function(err, res) {
+	// rpop message (oldest message)
+	this.db.rpop("nsp:twitter:msg", function(err, res) {
 		var result = JSON.parse(res);
 		if (result == null) {
 			return;
