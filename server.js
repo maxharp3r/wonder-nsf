@@ -7,6 +7,7 @@ var $ = require('jquery');
 var underscore = require("./static/lib/underscore-1.3.1-min");
 
 var nsp = require('./nsp.js');
+var utils = require('./utils.js');
 
 
 // app setup
@@ -104,23 +105,52 @@ db.subscribe("nsp:event_stream");
 // run
 nsp.init();
 
+var pushTwitter = function(displayPosition) {
+	$.when(nsp.nextTwitter()).done(function(data) {
+		$.extend(data, displayPosition);
+		io.sockets.in("all").emit("nextTwitter", data);
+	});
+};
+
+var pushFlickr = function(displayPosition) {
+	$.when(nsp.nextFlickr()).done(function(data) {
+		$.extend(data, displayPosition);
+		io.sockets.in("all").emit("nextFlickr", data);
+	});
+};
+
+// kick things off
+setTimeout(function() {
+	nsp.nextTwitter();
+}, 500);
+
 var iteration = 0;
 setInterval(function() {
-	var displayPosition = nsp.nextDisplayPosition();
+
 	iteration++;
 
-	if (iteration % 4 === 0) {
-		// twitter
-		$.when(nsp.nextTwitter()).done(function(data) {
-			$.extend(data, displayPosition);
-			io.sockets.in("all").emit("nextTwitter", data);
-		});
-	} else {
-		// flickr
-		$.when(nsp.nextFlickr()).done(function(data) {
-			$.extend(data, displayPosition);
-			io.sockets.in("all").emit("nextFlickr", data);
-		});
+	// message or photo?
+	var showMsg = utils.getRandomInt(0, 2) === 0;
+
+	// show multiple at once?
+	var numToShow = 1;
+	var r1 = utils.getRandomInt(0, 100);
+	if (r1 < 5) {
+		numToShow = 3;
+	} else if (r1 < 20) {
+		numToShow = 2;
+	} else if (r1 > 90) {
+		numToShow = 0;
 	}
-}, 2000);
+
+	// show one or more things
+	underscore(numToShow).times(function() {
+		var displayPosition = nsp.nextDisplayPosition();
+		if (showMsg === true) {
+			pushTwitter(displayPosition);
+		} else {
+			pushFlickr(displayPosition);
+		}
+	});
+}, 2500);
 

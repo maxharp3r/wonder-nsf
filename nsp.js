@@ -267,10 +267,10 @@ this.nextFlickr = function() {
 	}
 
 	// random
-	//var idx = utils.getRandomInt(0, this.data.photos.length - 1);
+	var idx = utils.getRandomInt(0, this.data.photos.length - 1);
 
 	// in order
-	var idx = this.data.photo_idx++;
+	//var idx = this.data.photo_idx++;
 
 	return {
 		url: this.data.photos[idx],
