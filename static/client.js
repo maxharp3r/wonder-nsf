@@ -10,7 +10,7 @@ var tmpl = {
 		<div class='tmpl results'>\
 			<div class='main big-text'><%= data.text %></div>\
 			<div class='footer small-text'>\
-				<div><%= data.from_user %></div>\
+				<div>@<%= data.user.screen_name %></div>\
 				<div><%= $.timeago(data.created_at) %></div>\
 				<div><%= data.words %></div>\
 			</div>\
@@ -123,6 +123,7 @@ var client = {
 			// console.log("next flickr: ", data.word, data.url);
 
 			var baseId = self.dom.getPanelId(data.displayPanel);
+			// var baseId = "#onetwothree";
 			var output = _.template(tmpl.word, {word: data.word});
 			$(baseId).html(output);
 			$(baseId).find(".tmpl").fadeIn(FADE_TIME);

@@ -92,6 +92,7 @@ io.sockets.on('connection', function (socket) {
 	});
 });
 
+
 // handle server-side events
 db.on("message", function (channel, data) {
 	console.log("redis channel " + channel + ": " + data);

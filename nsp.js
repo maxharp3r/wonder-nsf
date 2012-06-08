@@ -28,6 +28,7 @@ this.data = {
 	results: [],
 
 	// photos
+	photo_words_score: 0,
 	photo_current_word: "",
 	photo_idx: 0,
 	photos: [],
@@ -154,7 +155,7 @@ this.initTwitterStream = function() {
 this.searchTwitter = function() {
 	var self = this;
 
-	console.log("searchFlickr received");
+	console.log("searchTwitter received");
 	var deferred = new $.Deferred();
 
 	var searchString = encodeURIComponent('"I wonder"');
@@ -186,7 +187,7 @@ this.searchTwitter = function() {
 /**
  * Run a flickr search for a tag.
  */
-this.searchFlickr = function(tag) {
+this.searchFlickr = function(tag, score) {
 	var self = this;
 
 	var searchOpts = {
@@ -196,6 +197,12 @@ this.searchFlickr = function(tag) {
 		sort: "relevance",
 	};
 	this.flickrApi.photos.search(searchOpts,  function(error, results) {
+		if (error || !results) {
+			console.warn("Flickr search for " + tag + " failed.");
+			return;
+		}
+
+		self.data.photo_words_score = score;
 		self.data.photo_current_word = tag;
 		self.data.photo_idx = 0;
 
@@ -228,11 +235,14 @@ this.nextTwitter = function() {
 		var key = "nsp:twitter:msg:" + result.id + ":words";
 		self.db.zrevrange(key, 0, -1, "WITHSCORES", function(err, words) {
 			if (words.length > 2) {
-				self.searchFlickr(words[0] + "," + words[2]);
+				var score = parseInt(words[1]) + parseInt(words[3]);
+				self.searchFlickr(words[0] + "," + words[2], score);
 			} else if (words.length > 0) {
-				self.searchFlickr(words[0]);
+				var score = parseInt(words[1]);
+				self.searchFlickr(words[0], score);
 			} else {
-				self.data.photo_current_word = null;
+				// do nothing
+				// self.data.photo_current_word = null;
 			}
 
 			while (!underscore.isEmpty(words)) {
