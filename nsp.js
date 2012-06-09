@@ -248,6 +248,7 @@ this._nextTwitter = function(dbPrefix) {
 	// rpop message (oldest message)
 	this.db.rpop(dbPrefix, function(err, res) {
 		if (res == null) {
+			deferred.reject();
 			return;
 		}
 		var result = JSON.parse(res);

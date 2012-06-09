@@ -107,16 +107,16 @@ nsp.init();
 
 var pushTwitter = function(displayPosition) {
 	// first, check for northern spark messages
-	$.when(nsp.nextNspTwitter()).done(function(data) {
-		$.extend(data, displayPosition, {nsp: "Northern Spark"});
-		io.sockets.in("all").emit("nextTwitter", data);
-	});
-
-	// fall back to default messages
-	$.when(nsp.nextTwitter()).done(function(data) {
-		$.extend(data, displayPosition);
-		io.sockets.in("all").emit("nextTwitter", data);
-	});
+	$.when(nsp.nextNspTwitter())
+		.done(function(data) {
+			$.extend(data, displayPosition, {nsp: "Northern Spark"});
+			io.sockets.in("all").emit("nextTwitter", data);
+		}).fail(function() {
+			$.when(nsp.nextTwitter()).done(function(data) {
+				$.extend(data, displayPosition);
+				io.sockets.in("all").emit("nextTwitter", data);
+			});
+		});
 };
 
 var pushFlickr = function(displayPosition) {
