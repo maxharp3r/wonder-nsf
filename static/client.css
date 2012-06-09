@@ -7,7 +7,10 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 html { background:#000; color:#fff; font-family: 'Helvetica Neue', 'Helvetica', sans-serif; }
 body { text-align: center; }
 
-header {background: white; color:black; text-align:left; padding:2px; font-family: Monaco; font-size: 12pt; }
+header {
+	display: none;
+	background: white; color:black; text-align:left; padding:2px; font-family: Monaco; font-size: 12pt;
+}
 
 
 /* style */
@@ -46,6 +49,9 @@ header {background: white; color:black; text-align:left; padding:2px; font-famil
 .results .footer {
 	margin-top: 1em;
 	line-height: 1.5em;
+}
+.results .nsp {
+	color: yellow;
 }
 
 .word {

@@ -106,6 +106,13 @@ db.subscribe("nsp:event_stream");
 nsp.init();
 
 var pushTwitter = function(displayPosition) {
+	// first, check for northern spark messages
+	$.when(nsp.nextNspTwitter()).done(function(data) {
+		$.extend(data, displayPosition, {nsp: "Northern Spark"});
+		io.sockets.in("all").emit("nextTwitter", data);
+	});
+
+	// fall back to default messages
 	$.when(nsp.nextTwitter()).done(function(data) {
 		$.extend(data, displayPosition);
 		io.sockets.in("all").emit("nextTwitter", data);
@@ -124,22 +131,22 @@ setTimeout(function() {
 	nsp.nextTwitter();
 }, 500);
 
+// periodically find content and push to displays
 var iteration = 0;
 setInterval(function() {
-
 	iteration++;
 
 	// message or photo?
-	var showMsg = utils.getRandomInt(0, 2) === 0;
+	var showMsg = utils.getRandomInt(0, 99) < 40;
 
 	// show multiple at once?
 	var numToShow = 1;
-	var r1 = utils.getRandomInt(0, 100);
-	if (r1 < 5) {
+	var r1 = utils.getRandomInt(0, 99);
+	if (r1 < 10) {
 		numToShow = 3;
 	} else if (r1 < 20) {
 		numToShow = 2;
-	} else if (r1 > 90) {
+	} else if (r1 > 95) {
 		numToShow = 0;
 	}
 
@@ -150,7 +157,7 @@ setInterval(function() {
 			pushTwitter(displayPosition);
 		} else {
 			pushFlickr(displayPosition);
-		}
+		};
 	});
 }, 2500);
 

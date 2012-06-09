@@ -14,6 +14,11 @@ var NUM_SCREENS = 3;
 var CHECK_TWITTER_HEALTH_MS = 10 * 1000; // check the state of the tracker every n millis
 var RATE_LIMIT_MS = 2 * 1000; // no more than 1 message every n millis
 
+var TWITTER_STREAM_REGEX = /(^I wonder|^I think)/;
+var NSPK_REGEX = /(northern.spark|#nspk)/i;
+// var NSPK_REGEX = /(when)/i;
+
+
 this.db = null;
 this.nTwitterApi = null;
 
@@ -93,7 +98,10 @@ this.test = function() {
 	return deferred.promise();
 };
 
-this.handleTweet = function(tweet) {
+/**
+ * Handler for a tweet that we want to store in the db for display.
+ */
+this.handleTweet = function(tweet, dbPrefix) {
 	var self = this;
 
 	// get the interesting words
@@ -107,7 +115,7 @@ this.handleTweet = function(tweet) {
 				}
 
 				if (res > 1000) {
-					var key = "nsp:twitter:msg:" + tweet.id + ":words";
+					var key = dbPrefix + ":" + tweet.id + ":words";
 					self.db.zadd(key, res, word);
 					self.db.expire(key, 36000); // 10 hours
 				}
@@ -116,10 +124,13 @@ this.handleTweet = function(tweet) {
 	});
 
 	// lpush message - newest <==> oldest
-	self.db.lpush("nsp:twitter:msg", JSON.stringify(tweet));
-	self.db.ltrim("nsp:twitter:msg", 0, 99); // keep the leftmost (newest) 100 messages
+	self.db.lpush(dbPrefix, JSON.stringify(tweet));
+	self.db.ltrim(dbPrefix, 0, 99); // keep the leftmost (newest) 100 messages
 };
 
+/**
+ * Start listening to the twitter stream.
+ */
 this.initTwitterStream = function() {
 	var self = this;
 	console.log("Initializing twitter stream");
@@ -128,10 +139,16 @@ this.initTwitterStream = function() {
 	// https://dev.twitter.com/docs/api/1/post/statuses/filter
 	this.nTwitterApi.stream('statuses/filter', {track:'I wonder,I think'}, function(stream) {
 		stream.on('data', function (data) {
-			if (data.text.match(/(^I wonder|^I think)/) && self.data.acceptMsg === true) {
+			if (data.text.match(TWITTER_STREAM_REGEX)) {
+				if (data.text.match(NSPK_REGEX)) {
+					console.log("NSP! =================================");
+					console.log("stored nsp msg: ", data.created_at, data.text.substring(0,80));
+					self.handleTweet(data, "nsp:twitter:nsp:msg");
+				} else if (self.data.acceptMsg === true) {
+					console.log("stored msg: ", data.created_at, data.text.substring(0,80));
+					self.handleTweet(data, "nsp:twitter:msg");
+				}
 				self.data.acceptMsg = false;
-				console.log("TWITTER DATA", data.created_at, data.text);
-				self.handleTweet(data);
 			}
 		});
 		stream.on('error', function (error) {
@@ -152,6 +169,11 @@ this.initTwitterStream = function() {
 	});
 };
 
+/**
+ * Manually run a twitter search.
+ *
+ * Unused except when requested by the client explicitly.
+ */
 this.searchTwitter = function() {
 	var self = this;
 
@@ -170,7 +192,7 @@ this.searchTwitter = function() {
 			// .reverse() // reverse the default order - we want old to new
 			.each(function(result) {
 				found++;
-				self.handleTweet(data);
+				self.handleTweet(data, "nsp:twitter:msg");
 		});
 		console.log("twitter search for I wonder found " + found + " messages.");
 
@@ -219,20 +241,20 @@ this.searchFlickr = function(tag, score) {
 	});
 };
 
-this.nextTwitter = function() {
+this._nextTwitter = function(dbPrefix) {
 	var self = this;
 	var deferred = new $.Deferred();
 
 	// rpop message (oldest message)
-	this.db.rpop("nsp:twitter:msg", function(err, res) {
-		var result = JSON.parse(res);
-		if (result == null) {
+	this.db.rpop(dbPrefix, function(err, res) {
+		if (res == null) {
 			return;
 		}
+		var result = JSON.parse(res);
 		result.words = [];
 
 		// look for the scored words
-		var key = "nsp:twitter:msg:" + result.id + ":words";
+		var key = dbPrefix + ":" + result.id + ":words";
 		self.db.zrevrange(key, 0, -1, "WITHSCORES", function(err, words) {
 			if (words.length > 2) {
 				var score = parseInt(words[1]) + parseInt(words[3]);
@@ -257,6 +279,9 @@ this.nextTwitter = function() {
 	});
 	return deferred;
 };
+this.nextNspTwitter = function() { return this._nextTwitter("nsp:twitter:nsp:msg"); };
+this.nextTwitter = function() { return this._nextTwitter("nsp:twitter:msg"); };
+
 
 /**
  * Get the next photo.

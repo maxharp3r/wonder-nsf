@@ -12,10 +12,11 @@ var tmpl = {
 			<div class='footer small-text'>\
 				<div>@<%= data.user.screen_name %></div>\
 				<div><%= $.timeago(data.created_at) %></div>\
-				<div><%= data.words %></div>\
+				<div class='nsp'><%= data.nsp %></div>\
 			</div>\
 		</div>\
 	",
+	//<div><%= data.words %></div>\
 
 	word: "\
 		<div class='tmpl word big-text'>\
