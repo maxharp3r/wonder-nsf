@@ -159,5 +159,5 @@ setInterval(function() {
 			pushFlickr(displayPosition);
 		};
 	});
-}, 2500);
+}, 3500);
 
