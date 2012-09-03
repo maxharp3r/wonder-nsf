@@ -10,13 +10,13 @@ var utils = require('./utils.js');
 
 
 var NUM_PANELS = 3;
-var NUM_SCREENS = 3;
+var NUM_SCREENS = 1;
 var CHECK_TWITTER_HEALTH_MS = 10 * 1000; // check the state of the tracker every n millis
 var RATE_LIMIT_MS = 2 * 1000; // no more than 1 message every n millis
 
 var TWITTER_STREAM_REGEX = /(^I wonder|^I think)/;
-var NSPK_REGEX = /(northern.spark|#nspk)/i;
-// var NSPK_REGEX = /(when)/i;
+var PRIORITY_REGEX = /(#namac)/i;
+// var PRIORITY_REGEX = /(when)/i;
 
 
 this.db = null;
@@ -140,10 +140,10 @@ this.initTwitterStream = function() {
 	this.nTwitterApi.stream('statuses/filter', {track:'I wonder,I think'}, function(stream) {
 		stream.on('data', function (data) {
 			if (data.text.match(TWITTER_STREAM_REGEX)) {
-				if (data.text.match(NSPK_REGEX)) {
-					console.log("NSP! =================================");
-					console.log("stored nsp msg: ", data.created_at, data.text.substring(0,80));
-					self.handleTweet(data, "nsp:twitter:nsp:msg");
+				if (data.text.match(PRIORITY_REGEX)) {
+					console.log("PRIORITY TWEET! =================================");
+					console.log("stored priority msg: ", data.created_at, data.text.substring(0,80));
+					self.handleTweet(data, "nsp:twitter:priority:msg");
 				} else if (self.data.acceptMsg === true) {
 					console.log("stored msg: ", data.created_at, data.text.substring(0,80));
 					self.handleTweet(data, "nsp:twitter:msg");
@@ -280,7 +280,7 @@ this._nextTwitter = function(dbPrefix) {
 	});
 	return deferred;
 };
-this.nextNspTwitter = function() { return this._nextTwitter("nsp:twitter:nsp:msg"); };
+this.nextPriorityTwitter = function() { return this._nextTwitter("nsp:twitter:priority:msg"); };
 this.nextTwitter = function() { return this._nextTwitter("nsp:twitter:msg"); };
 
 

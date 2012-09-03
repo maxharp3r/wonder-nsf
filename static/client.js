@@ -12,7 +12,7 @@ var tmpl = {
 			<div class='footer small-text'>\
 				<div>@<%= data.user.screen_name %></div>\
 				<div><%= $.timeago(data.created_at) %></div>\
-				<div class='nsp'><%= data.nsp %></div>\
+				<div class='extra'><%= data.extra %></div>\
 			</div>\
 		</div>\
 	",
@@ -87,10 +87,14 @@ var client = {
 
 	/** return true if this socket message is explictly for this screen */
 	isMsgForMe: function(data) {
+
 		if (!data || !data.displayScreen) {
 			return false;
 		}
-		return this.id.indexOf(data.displayScreen) >= 0;
+		var ret = this.id.indexOf(data.displayScreen) >= 0;
+		console.debug("Data for me? " + ret + " (screen=" + data.displayScreen
+			+ ", panel=" + data.displayPanel + ")");
+		return ret;
 	},
 
 	listen: function() {
