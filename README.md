@@ -20,11 +20,12 @@ API Keys
 Dependencies
 ------------
 
-* Node
-* Redis
-  * brew install redis
-  * https://github.com/mranney/node_redis - npm install redis
-  * (client access: `redis.cli` )
+* brew
+  * node
+  * redis
+* npm (see node_modules dir)
+  * redis - https://github.com/mranney/node_redis
+  * request - https://github.com/mikeal/request
 
 
 Docs
