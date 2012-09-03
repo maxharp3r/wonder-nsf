@@ -14,6 +14,12 @@ var NUM_SCREENS = 1;
 var CHECK_TWITTER_HEALTH_MS = 10 * 1000; // check the state of the tracker every n millis
 var RATE_LIMIT_MS = 2 * 1000; // no more than 1 message every n millis
 
+// redis keys
+var DB_EVENT_STREAM = "nsp:event_stream";
+var DB_MSG = "nsp:twitter:msg"; // tweets
+var DB_MSG_PRIORITY = "nsp:twitter:priority:msg"; // tweets that should be shown soon
+var DB_WORD_SCORES = "nsp:words"; // sorted set, score is popularity rank
+
 var TWITTER_STREAM_REGEX = /(^I wonder|^I think)/;
 var PRIORITY_REGEX = /(#namac)/i;
 // var PRIORITY_REGEX = /(when)/i;
@@ -92,7 +98,7 @@ this.test = function() {
 	var self = this;
 	var deferred = new $.Deferred();
 	this.nTwitterApi.verifyCredentials(function(err, data) {
-		self.db.publish("nsp:event_stream", JSON.stringify(data));
+		self.db.publish(DB_EVENT_STREAM, JSON.stringify(data));
 		deferred.resolve(data);
 	});
 	return deferred.promise();
@@ -109,7 +115,7 @@ this.handleTweet = function(tweet, dbPrefix) {
 	underscore.each(words, function(word) {
 		if (word.length > 2) {
 			word = word.toLowerCase();
-			self.db.zscore("nsp:words", word, function(err, res) {
+			self.db.zscore(DB_WORD_SCORES, word, function(err, res) {
 				if (err) {
 					return;
 				}
@@ -143,10 +149,10 @@ this.initTwitterStream = function() {
 				if (data.text.match(PRIORITY_REGEX)) {
 					console.log("PRIORITY TWEET! =================================");
 					console.log("stored priority msg: ", data.created_at, data.text.substring(0,80));
-					self.handleTweet(data, "nsp:twitter:priority:msg");
+					self.handleTweet(data, DB_MSG_PRIORITY);
 				} else if (self.data.acceptMsg === true) {
 					console.log("stored msg: ", data.created_at, data.text.substring(0,80));
-					self.handleTweet(data, "nsp:twitter:msg");
+					self.handleTweet(data, DB_MSG);
 				}
 				self.data.acceptMsg = false;
 			}
@@ -192,12 +198,12 @@ this.searchTwitter = function() {
 			// .reverse() // reverse the default order - we want old to new
 			.each(function(result) {
 				found++;
-				self.handleTweet(data, "nsp:twitter:msg");
+				self.handleTweet(data, DB_MSG);
 		});
 		console.log("twitter search for I wonder found " + found + " messages.");
 
 		// return the current length of the queue
-		self.db.llen("nsp:twitter:msg", function (err, res) {
+		self.db.llen(DB_MSG, function (err, res) {
 			deferred.resolve(res);
 		});
 
@@ -280,8 +286,8 @@ this._nextTwitter = function(dbPrefix) {
 	});
 	return deferred;
 };
-this.nextPriorityTwitter = function() { return this._nextTwitter("nsp:twitter:priority:msg"); };
-this.nextTwitter = function() { return this._nextTwitter("nsp:twitter:msg"); };
+this.nextPriorityTwitter = function() { return this._nextTwitter(DB_MSG_PRIORITY); };
+this.nextTwitter = function() { return this._nextTwitter(DB_MSG); };
 
 
 /**
