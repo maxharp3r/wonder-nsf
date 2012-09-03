@@ -15,7 +15,7 @@
 */
 
 body {
-  min-width: 1023px;
+  min-width: 1278px;
 }
 
 /* Containers
@@ -23,7 +23,7 @@ body {
 .container_3 {
 	margin-left: auto;
 	margin-right: auto;
-	width: 1023px;
+	width: 1278px;
 }
 
 /* Grid >> Global
@@ -36,8 +36,8 @@ body {
 	display:inline;
 	float: left;
 	position: relative;
-	margin-left: 20px;
-	margin-right: 20px;
+	margin-left: 10px;
+	margin-right: 10px;
 }
 
 
@@ -65,15 +65,15 @@ body {
 
 
 .container_3 .grid_1 {
-	width:301px;
+	width:406px;
 }
 
 .container_3 .grid_2 {
-	width:642px;
+	width:832px;
 }
 
 .container_3 .grid_3 {
-	width:983px;
+	width:1258px;
 }
 
 
@@ -84,11 +84,11 @@ body {
 
 
 .container_3 .prefix_1 {
-	padding-left:341px;
+	padding-left:426px;
 }
 
 .container_3 .prefix_2 {
-	padding-left:682px;
+	padding-left:852px;
 }
 
 
@@ -98,11 +98,11 @@ body {
 
 
 .container_3 .suffix_1 {
-	padding-right:341px;
+	padding-right:426px;
 }
 
 .container_3 .suffix_2 {
-	padding-right:682px;
+	padding-right:852px;
 }
 
 
@@ -112,11 +112,11 @@ body {
 
 
 .container_3 .push_1 {
-	left:341px;
+	left:426px;
 }
 
 .container_3 .push_2 {
-	left:682px;
+	left:852px;
 }
 
 
@@ -126,11 +126,11 @@ body {
 
 
 .container_3 .pull_1 {
-	left:-341px;
+	left:-426px;
 }
 
 .container_3 .pull_2 {
-	left:-682px;
+	left:-852px;
 }
 
 

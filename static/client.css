@@ -33,12 +33,12 @@ header {
 
 #content {
 	text-align: left;
-	height: 520px; /* max 768 */
+	height: 768px; /* max 768 */
 	overflow: hidden;
 }
 
 #one, #two, #three {
-	height: 520px;
+	height: 768px;
 	overflow: hidden;
 }
 
