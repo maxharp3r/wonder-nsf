@@ -5,6 +5,8 @@ var redis = require("redis");
 var io = require('socket.io').listen(app).set("log level", 1);
 var $ = require('jquery');
 var underscore = require("./static/lib/underscore-1.3.1-min");
+var request = require('request');
+var fs = require('fs');
 
 var config = require('./config.js').config;
 var nsp = require('./nsp.js');
@@ -169,7 +171,14 @@ var nextEvent = function() {
 
 var run = function() {
 	nsp.init();
-	setInterval(nextEvent, config.app.NEXT_EVENT_INTERVAL_MS);
+
+	// always show a twitter message first. until we show a twitter message, we
+	// do not have words to drive image searches.
+	handleText(nsp.nextDisplayPosition());
+	setTimeout(function() {
+		// nextEvent is the main workhorse of this app
+		setInterval(nextEvent, config.app.NEXT_EVENT_INTERVAL_MS);
+	}, config.app.NEXT_EVENT_INTERVAL_MS);
 }
 run();
 

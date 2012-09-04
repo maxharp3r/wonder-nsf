@@ -4,6 +4,7 @@ exports.config = {
 
 	app: {
 		LISTEN_PORT: 8080,
+		IMAGES_PATH: './images/',
 
 		// if true, send content to browsers
 		DO_EMIT: true,
@@ -19,11 +20,6 @@ exports.config = {
 		CHECK_TWITTER_HEALTH_MS: 10 * 1000,
 		// no more than 1 message every n millis
 		RATE_LIMIT_MS: 2 * 1000,
-
-		// if true, persist twitter messages to a less temporary location
-		RECORD_TWITTER: true,
-		// if true, download images when we fetch messages
-		RECORD_IMAGES: true,
 	},
 
 	ui: {

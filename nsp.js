@@ -215,12 +215,11 @@ this.searchFlickr = function(tag, score) {
 		self.data.photos = [];
 		console.log("Flickr search for " + tag + " found " + results.photo.length + " photos.");
 		underscore.each(results.photo, function(result) {
+			var filename = result.id + "_" + result.secret + ".jpg";
 			var url = "http://farm" + result.farm +
 				".staticflickr.com/" + result.server +
-				"/" + result.id +
-				"_" + result.secret +
-				".jpg";
-			self.data.photos.push(url);
+				"/" + filename;
+			self.data.photos.push({url: url, filename: filename});
 		});
 	});
 };
@@ -273,6 +272,7 @@ this.nextTwitter = function() { return this._nextTwitter(config.dbkey.MSG); };
  */
 this.nextFlickr = function() {
 	if (this.data.photos.length === 0 || this.data.photo_current_word === null) {
+		console.log("nextFlickr has nothing to show right now.");
 		return;
 	}
 
@@ -283,7 +283,8 @@ this.nextFlickr = function() {
 	//var idx = this.data.photo_idx++;
 
 	return {
-		url: this.data.photos[idx],
+		url: this.data.photos[idx].url,
+		filename: this.data.photos[idx].filename,
 		word: this.data.photo_current_word,
 	};
 };
