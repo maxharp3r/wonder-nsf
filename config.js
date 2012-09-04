@@ -1,11 +1,19 @@
 
 // server configuration
 exports.config = {
+
 	app: {
 		LISTEN_PORT: 8080,
 
-		// push content to client every n millis
-		PUSH_CONTENT_INTERVAL_MS: 3.5 * 1000,
+		// if true, send content to browsers
+		DO_EMIT: true,
+		// if true, draw content from the db rather from API searches
+		DO_EMIT_FROM_REPLAY: false,
+		// if true, stash content in the db for future replay
+		DO_SAVE_FOR_REPLAY: false,
+
+		// emit or save every n millis
+		NEXT_EVENT_INTERVAL_MS: 3.5 * 1000,
 
 		// check the state of the tracker every n millis
 		CHECK_TWITTER_HEALTH_MS: 10 * 1000,
@@ -35,5 +43,6 @@ exports.config = {
 		TWITTER_STREAM_REGEX: /(^I wonder|^I think)/,
 		PRIORITY_REGEX: /(#namac)/i,
 		// PRIORITY_REGEX: /(when)/i,
+		PRIORITY_LABEL: "NAMAC",
 	},
 };

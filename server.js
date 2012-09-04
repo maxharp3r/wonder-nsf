@@ -97,33 +97,50 @@ db.on("message", function (channel, data) {
 db.subscribe(config.dbkey.EVENT_STREAM);
 
 
+// emit and/or save data for replay.
+var handleData = function(event, data) {
+	if (!data) {
+		log.warn("Missing or empty data for event " + event);
+		return;
+	}
 
+	if (config.app.DO_SAVE_FOR_REPLAY) {
+		$.extend(data, {event: event});
 
-// push text to the client
-var pushText = function(displayPosition) {
+		// TODO
+
+	}
+
+	if (config.app.DO_EMIT) {
+		io.sockets.in("all").emit(event, data);
+	};
+};
+
+// emit or save a twitter message. ensure that high-priority messages are shown.
+var handleText = function(displayPosition) {
 	// first, check for priority messages
 	$.when(nsp.nextPriorityTwitter())
 		.done(function(data) {
-			$.extend(data, displayPosition, {extra: "Northern Spark"});
-			io.sockets.in("all").emit("nextTwitter", data);
+			$.extend(data, displayPosition, {extra: config.search.PRIORITY_LABEL});
+			handleData("nextTwitter", data);
 		}).fail(function() {
 			$.when(nsp.nextTwitter()).done(function(data) {
 				$.extend(data, displayPosition);
-				io.sockets.in("all").emit("nextTwitter", data);
+				handleData("nextTwitter", data);
 			});
 		});
 };
 
-// push an image to the client
-var pushImg = function(displayPosition) {
+// emit or save an image. if saving, initiate a download and store the local link.
+var handleImg = function(displayPosition) {
 	$.when(nsp.nextFlickr()).done(function(data) {
 		$.extend(data, displayPosition);
-		io.sockets.in("all").emit("nextFlickr", data);
+		handleData("nextFlickr", data);
 	});
 };
 
-// periodically find content and push to displays
-var push = function() {
+// periodically emit or save
+var nextEvent = function() {
 
 	// message or photo?
 	var showMsg = utils.getRandomInt(0, 99) < 40;
@@ -143,14 +160,16 @@ var push = function() {
 	underscore(numToShow).times(function() {
 		var displayPosition = nsp.nextDisplayPosition();
 		if (showMsg === true) {
-			pushText(displayPosition);
+			handleText(displayPosition);
 		} else {
-			pushImg(displayPosition);
+			handleImg(displayPosition);
 		};
 	});
 }
 
-//run
-nsp.init();
-setInterval(push, config.app.PUSH_CONTENT_INTERVAL_MS);
+var run = function() {
+	nsp.init();
+	setInterval(nextEvent, config.app.NEXT_EVENT_INTERVAL_MS);
+}
+run();
 
