@@ -6,6 +6,7 @@ var io = require('socket.io').listen(app).set("log level", 1);
 var $ = require('jquery');
 var underscore = require("./static/lib/underscore-1.3.1-min");
 
+var config = require('./config.js').config;
 var nsp = require('./nsp.js');
 var utils = require('./utils.js');
 
@@ -14,7 +15,7 @@ var utils = require('./utils.js');
 app.configure(function() {
 	app.use('/static', express.static(__dirname + '/static'));
 });
-app.listen(8080);
+app.listen(config.app.LISTEN_PORT);
 app.get('/', function (req, res) {
 	res.sendfile(__dirname + '/static/client.html');
 });
@@ -93,11 +94,10 @@ db.on("message", function (channel, data) {
 	console.log("redis channel " + channel + ": " + data);
 	// io.sockets.in("all").emit("test", data);
 });
-db.subscribe("nsp:event_stream");
+db.subscribe(config.dbkey.EVENT_STREAM);
 
 
-// run
-nsp.init();
+
 
 // push text to the client
 var pushText = function(displayPosition) {
@@ -123,7 +123,7 @@ var pushImg = function(displayPosition) {
 };
 
 // periodically find content and push to displays
-setInterval(function() {
+var push = function() {
 
 	// message or photo?
 	var showMsg = utils.getRandomInt(0, 99) < 40;
@@ -148,5 +148,9 @@ setInterval(function() {
 			pushImg(displayPosition);
 		};
 	});
-}, 3500);
+}
+
+//run
+nsp.init();
+setInterval(push, config.app.PUSH_CONTENT_INTERVAL_MS);
 
