@@ -9,7 +9,7 @@ body { text-align: center; }
 
 header {
 	display: none;
-	background: white; color:black; text-align:left; padding:2px; font-family: Monaco; font-size: 12pt;
+	background: white; color:black; text-align:left; padding:2px 20px; font-size: 12pt;
 }
 
 

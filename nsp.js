@@ -44,13 +44,6 @@ this.data = {
 	photo_idx: 0,
 	photos: [],
 
-	// background colors
-	color_idx: 0,
-	colors: [
-		"#000",
-		"#900", // red
-		"#990", // yellow
-	],
 };
 
 this.init = function() {
@@ -148,7 +141,7 @@ this.initTwitterStream = function() {
 			if (data.text.match(TWITTER_STREAM_REGEX)) {
 				if (data.text.match(PRIORITY_REGEX)) {
 					console.log("PRIORITY TWEET! =================================");
-					console.log("stored priority msg: ", data.created_at, data.text.substring(0,80));
+					console.log("stored priority msg: ", data.created_at, data.text.substring(0,40));
 					self.handleTweet(data, DB_MSG_PRIORITY);
 				} else if (self.data.acceptMsg === true) {
 					console.log("stored msg: ", data.created_at, data.text.substring(0,80));
@@ -308,14 +301,6 @@ this.nextFlickr = function() {
 		url: this.data.photos[idx],
 		word: this.data.photo_current_word,
 	};
-};
-
-/**
- * Get the next background color.
- */
-this.color = function() {
-	this.data.color_idx = ((this.data.color_idx + 1) % this.data.colors.length);
-	return this.data.colors[this.data.color_idx];
 };
 
 /**

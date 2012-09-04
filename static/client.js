@@ -39,7 +39,6 @@ var client = {
 		go_link: $("a#go"),
 		next_msg_link: $("a#next-msg"),
 		next_photo_link: $("a#next-photo"),
-		next_color_link: $("a#next-color"),
 		screen_id: $("#screen-id"),
 
 		// display
@@ -71,9 +70,6 @@ var client = {
 		this.dom.next_photo_link.click(function() {
 			self.socket.emit("nextFlickr");
 		});
-		this.dom.next_color_link.click(function() {
-			self.socket.emit("nextColor");
-		});
 		this.listen();
 
 		// set this screen's id from the URL's #hash
@@ -86,14 +82,13 @@ var client = {
 	},
 
 	/** return true if this socket message is explictly for this screen */
-	isMsgForMe: function(data) {
-
+	isMsgForMe: function(data, debug_type) {
 		if (!data || !data.displayScreen) {
 			return false;
 		}
 		var ret = this.id.indexOf(data.displayScreen) >= 0;
-		console.debug("Data for me? " + ret + " (screen=" + data.displayScreen
-			+ ", panel=" + data.displayPanel + ")");
+		console.debug("Data: " + debug_type + " (isFormMe=" + ret + ", screen="
+			+ data.displayScreen + ", panel=" + data.displayPanel + ")");
 		return ret;
 	},
 
@@ -107,7 +102,7 @@ var client = {
 			self.dom.resultsMain.text("got " + data + " results");
 		});
 		this.socket.on('nextTwitter', function (data) {
-			if (!self.isMsgForMe(data)) { return; }
+			if (!self.isMsgForMe(data, "twitter")) { return; }
 
 			self.clearPhoto();
 			// console.log("next twitter: ", data);
@@ -118,7 +113,7 @@ var client = {
 			$(baseId + " .tmpl").fadeIn(FADE_TIME);
 		});
 		this.socket.on('nextFlickr', function (data) {
-			if (!self.isMsgForMe(data)) { return; }
+			if (!self.isMsgForMe(data, "flickr")) { return; }
 
 			self.clearText();
 			if (data === null) {
@@ -139,11 +134,6 @@ var client = {
 				positionType: "relative",
 				zIndex: 10,
 			});
-		});
-		this.socket.on('nextColor', function (color) {
-			self.clearText();
-			self.clearPhoto();
-			self.dom.html.animate({ backgroundColor: color }, FADE_TIME);
 		});
 	},
 

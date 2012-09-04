@@ -85,12 +85,6 @@ io.sockets.on('connection', function (socket) {
 		});
 	});
 
-	socket.on("nextColor", function() {
-		console.log("got color");
-		var color = nsp.color();
-		socket.emit("nextColor", color);
-		console.log("emit " + color);
-	});
 });
 
 
@@ -129,9 +123,7 @@ var pushImg = function(displayPosition) {
 };
 
 // periodically find content and push to displays
-var iteration = 0;
 setInterval(function() {
-	iteration++;
 
 	// message or photo?
 	var showMsg = utils.getRandomInt(0, 99) < 40;
