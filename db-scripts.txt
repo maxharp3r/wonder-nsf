@@ -1,0 +1,14 @@
+# This file contains notes about working with this project's data in redis.
+# Commands here should be ok to copy/paste into a bash shell.
+
+
+# clear out NSP content from redis (run from bash)
+redis-cli KEYS "nsp:twitter:msg:*" | xargs redis-cli DEL
+redis-cli KEYS "nsp:twitter:priority:msg:*" | xargs redis-cli DEL
+
+
+# check the status of the word scores dictionary
+# number of words
+redis-cli zcard nsp:words
+# should return a number (currently 3891, may change)
+redis-cli zscore nsp:words guitar
