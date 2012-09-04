@@ -1,5 +1,11 @@
-# This file contains notes about working with this project's data in redis.
+# This file contains notes about working with this project's data.
 # Commands here should be ok to copy/paste into a bash shell.
+
+
+# clear out recorded images from images dir
+pushd images
+# rm *.jpg
+popd
 
 
 # clear out NSP content from redis (run from bash)
@@ -12,3 +18,4 @@ redis-cli KEYS "nsp:twitter:priority:msg:*" | xargs redis-cli DEL
 redis-cli zcard nsp:words
 # should return a number (currently 3891, may change)
 redis-cli zscore nsp:words guitar
+# if these do not look right, run "redis-cli DEL nsp:words" and "node load-data.js"
