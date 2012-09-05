@@ -112,14 +112,13 @@ var handleData = function(event, data) {
 	}
 	console.log("outgoing data: " + event);
 
-	if (config.app.DO_SAVE_FOR_REPLAY) {
+	if (config.app.DO_SAVE_FOR_REPLAY && !config.app.DO_EMIT_FROM_REPLAY) {
 		$.extend(data, {event: event}); // event: nextFlickr
-
 		// console.log("saving data: " + JSON.stringify(data));
 		db.rpush(config.dbkey.RECORDED, JSON.stringify(data));
 	}
 
-	if (config.app.DO_EMIT) {
+	if (config.app.DO_EMIT || config.app.DO_EMIT_FROM_REPLAY) {
 		io.sockets.in("all").emit(event, data);
 	};
 };
@@ -163,13 +162,7 @@ var handleImg = function(displayPosition) {
 	});
 };
 
-// periodically emit or save
-var nextEvent = function() {
-
-	// message or photo?
-	var showMsg = utils.getRandomInt(0, 99) < 40;
-
-	// show multiple at once?
+var getNumToShow = function() {
 	var numToShow = 1;
 	var r1 = utils.getRandomInt(0, 99);
 	if (r1 < 10) {
@@ -179,9 +172,31 @@ var nextEvent = function() {
 	} else if (r1 > 95) {
 		numToShow = 0;
 	}
+	return numToShow;
+}
+
+//emit a replay event
+var nextReplay = function() {
+	underscore(getNumToShow()).times(function() {
+		db.lpop(config.dbkey.RECORDED, function(err, res) {
+			if (res === null) {
+				console.log("Uh oh.");
+				throw("No more recorded content. Exiting.");
+			}
+
+			var data = JSON.parse(res);
+			handleData(data.event, data);
+		});
+	});
+}
+
+// periodically emit or save
+var nextEvent = function() {
+	// message or photo?
+	var showMsg = utils.getRandomInt(0, 99) < 40;
 
 	// show one or more things
-	underscore(numToShow).times(function() {
+	underscore(getNumToShow()).times(function() {
 		var displayPosition = nsp.nextDisplayPosition();
 		if (showMsg === true) {
 			handleText(displayPosition);
@@ -192,15 +207,12 @@ var nextEvent = function() {
 }
 
 var run = function() {
-	nsp.init();
-
-	// always show a twitter message first. until we show a twitter message, we
-	// do not have words to drive image searches.
-	handleText(nsp.nextDisplayPosition());
-	setTimeout(function() {
-		// nextEvent is the main workhorse of this app
+	if (config.app.DO_EMIT_FROM_REPLAY) {
+		setInterval(nextReplay, config.app.NEXT_EVENT_INTERVAL_MS);
+	} else {
+		nsp.init();
 		setInterval(nextEvent, config.app.NEXT_EVENT_INTERVAL_MS);
-	}, config.app.NEXT_EVENT_INTERVAL_MS);
+	}
 }
 run();
 
