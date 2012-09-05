@@ -208,26 +208,31 @@ this.searchFlickr = function(tag, score) {
 		//sort: "date-posted-desc",
 		sort: "relevance",
 	};
-	this.flickrApi.photos.search(searchOpts,  function(error, results) {
-		if (error || !results) {
-			console.warn("Flickr search for " + tag + " failed.");
-			return;
-		}
+	try {
+		this.flickrApi.photos.search(searchOpts,  function(error, results) {
+			if (error || !results) {
+				console.warn("Flickr search for " + tag + " failed.");
+				return;
+			}
 
-		self.data.photo_words_score = score;
-		self.data.photo_current_word = tag;
-		self.data.photo_idx = 0;
+			self.data.photo_words_score = score;
+			self.data.photo_current_word = tag;
+			self.data.photo_idx = 0;
 
-		self.data.photos = [];
-		console.log("flickr search for " + tag + " found " + results.photo.length + " photos.");
-		underscore.each(results.photo, function(result) {
-			var filename = result.id + "_" + result.secret + ".jpg";
-			var url = "http://farm" + result.farm +
+			self.data.photos = [];
+			console.log("flickr search for " + tag + " found " + results.photo.length + " photos.");
+			underscore.each(results.photo, function(result) {
+				var filename = result.id + "_" + result.secret + ".jpg";
+				var url = "http://farm" + result.farm +
 				".staticflickr.com/" + result.server +
 				"/" + filename;
-			self.data.photos.push({url: url, filename: filename});
+				self.data.photos.push({url: url, filename: filename});
+			});
 		});
-	});
+	} catch(e) {
+		console.log("Flickr API failed: " + e);
+		console.log("Stack trace: " + e.stack);
+	}
 };
 
 this._nextTwitter = function(dbPrefix) {
