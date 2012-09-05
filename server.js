@@ -16,6 +16,7 @@ var utils = require('./utils.js');
 // app setup
 app.configure(function() {
 	app.use('/static', express.static(__dirname + '/static'));
+	app.use('/images', express.static(__dirname + '/images'));
 });
 app.listen(config.app.LISTEN_PORT);
 app.get('/', function (req, res) {
@@ -92,11 +93,15 @@ io.sockets.on('connection', function (socket) {
 
 
 // handle server-side events
-db.on("message", function (channel, data) {
+var pubsub = redis.createClient();
+pubsub.on("error", function (err) {
+	console.error("REDIS ERROR (server): " + err);
+});
+pubsub.on("message", function (channel, data) {
 	console.log("redis channel " + channel + ": " + data);
 	// io.sockets.in("all").emit("test", data);
 });
-db.subscribe(config.dbkey.EVENT_STREAM);
+pubsub.subscribe(config.dbkey.EVENT_STREAM);
 
 
 // emit and/or save data for replay.
@@ -105,12 +110,13 @@ var handleData = function(event, data) {
 		log.warn("Missing or empty data for event " + event);
 		return;
 	}
+	console.log("outgoing data: " + event);
 
 	if (config.app.DO_SAVE_FOR_REPLAY) {
-		$.extend(data, {event: event});
+		$.extend(data, {event: event}); // event: nextFlickr
 
-		// TODO
-
+		// console.log("saving data: " + JSON.stringify(data));
+		db.rpush(config.dbkey.RECORDED, JSON.stringify(data));
 	}
 
 	if (config.app.DO_EMIT) {
@@ -136,7 +142,23 @@ var handleText = function(displayPosition) {
 // emit or save an image. if saving, initiate a download and store the local link.
 var handleImg = function(displayPosition) {
 	$.when(nsp.nextFlickr()).done(function(data) {
+		// nextFlickr always returns success, so check for data
+		if (!data) {
+			return;
+		}
+
 		$.extend(data, displayPosition);
+
+		if (config.app.DO_SAVE_FOR_REPLAY) {
+			// add a second url for use in replays
+			$.extend(data, {local_url: "/images/" + data.filename});
+
+			// kick off an image download
+			console.log("downloading " + data.url);
+			var path = config.app.IMAGES_PATH + data.filename;
+			request(data.url).pipe(fs.createWriteStream(path));
+		}
+
 		handleData("nextFlickr", data);
 	});
 };

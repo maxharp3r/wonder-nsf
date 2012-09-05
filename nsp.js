@@ -107,8 +107,13 @@ this.handleTweet = function(tweet, dbPrefix) {
 		}
 	});
 
+	// only keep the required fields
+	var little_user = underscore.pick(tweet.user, 'screen_name');
+	var little_tweet = underscore.pick(tweet, 'id', 'text', 'created_at');
+	var my_tweet = $.extend(little_tweet, {user: little_user});
+
 	// lpush message - newest <==> oldest
-	self.db.lpush(dbPrefix, JSON.stringify(tweet));
+	self.db.lpush(dbPrefix, JSON.stringify(my_tweet));
 	self.db.ltrim(dbPrefix, 0, 99); // keep the leftmost (newest) 100 messages
 };
 
@@ -126,10 +131,10 @@ this.initTwitterStream = function() {
 			if (data.text.match(config.search.TWITTER_STREAM_REGEX)) {
 				if (data.text.match(config.search.PRIORITY_REGEX)) {
 					console.log("PRIORITY TWEET! =================================");
-					console.log("stored priority msg: ", data.created_at, data.text.substring(0,40));
+					console.log("incoming priority msg: ", data.created_at, data.text.substring(0,50));
 					self.handleTweet(data, config.dbkey.MSG_PRIORITY);
 				} else if (self.data.acceptMsg === true) {
-					console.log("stored msg: ", data.created_at, data.text.substring(0,80));
+					console.log("incoming msg: ", data.created_at, data.text.substring(0,50));
 					self.handleTweet(data, config.dbkey.MSG);
 				}
 				self.data.acceptMsg = false;
@@ -137,17 +142,17 @@ this.initTwitterStream = function() {
 		});
 		stream.on('error', function (error) {
 			// Handle a programming (?) error
-			console.log("TWITTER ERROR", error);
+			console.warn("TWITTER ERROR", error);
 			self.data.isRunning = false;
 		});
 		stream.on('end', function (response) {
 			// Handle a disconnection
-			console.log("TWITTER END");
+			console.warn("TWITTER END");
 			self.data.isRunning = false;
 		});
 		stream.on('destroy', function (response) {
 			// Handle a 'silent' disconnection from Twitter, no end/error event fired
-			console.log("TWITTER DESTROY");
+			console.warn("TWITTER DESTROY");
 			self.data.isRunning = false;
 		});
 	});
@@ -195,6 +200,7 @@ this.searchTwitter = function() {
  */
 this.searchFlickr = function(tag, score) {
 	var self = this;
+	// console.log("search flickr: tag=" + tag + ", score=" + score);
 
 	var searchOpts = {
 		tags: tag,
@@ -213,7 +219,7 @@ this.searchFlickr = function(tag, score) {
 		self.data.photo_idx = 0;
 
 		self.data.photos = [];
-		console.log("Flickr search for " + tag + " found " + results.photo.length + " photos.");
+		console.log("flickr search for " + tag + " found " + results.photo.length + " photos.");
 		underscore.each(results.photo, function(result) {
 			var filename = result.id + "_" + result.secret + ".jpg";
 			var url = "http://farm" + result.farm +
@@ -230,7 +236,9 @@ this._nextTwitter = function(dbPrefix) {
 
 	// rpop message (oldest message)
 	this.db.rpop(dbPrefix, function(err, res) {
-		if (res == null) {
+		if (res === null) {
+			// priority queue will usually be empty - this logging adds noise
+			// console.warn(" - nextTwitter has nothing to show right now");
 			deferred.reject();
 			return;
 		}
@@ -272,7 +280,7 @@ this.nextTwitter = function() { return this._nextTwitter(config.dbkey.MSG); };
  */
 this.nextFlickr = function() {
 	if (this.data.photos.length === 0 || this.data.photo_current_word === null) {
-		console.log("nextFlickr has nothing to show right now.");
+		console.warn(" - nextFlickr has nothing to show right now.");
 		return;
 	}
 

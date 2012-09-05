@@ -9,8 +9,10 @@ popd
 
 
 # clear out NSP content from redis (run from bash)
+redis-cli DEL "nsp:twitter:msg"
 redis-cli KEYS "nsp:twitter:msg:*" | xargs redis-cli DEL
 redis-cli KEYS "nsp:twitter:priority:msg:*" | xargs redis-cli DEL
+redis-cli DEL "nsp:recorded"
 
 
 # check the status of the word scores dictionary

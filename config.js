@@ -30,9 +30,17 @@ exports.config = {
 	// redis keys
 	dbkey: {
 		EVENT_STREAM: "nsp:event_stream",
-		MSG: "nsp:twitter:msg", // tweets
-		MSG_PRIORITY: "nsp:twitter:priority:msg", // tweets that should be shown soon
-		WORD_SCORES: "nsp:words", // sorted set, score is popularity rank
+
+		// list: recorded tweets and images
+		RECORDED: "nsp:recorded",
+
+		// MSG and MSG_PRIORITY contain their own queue of content, and are the
+		// prefixes for keys like nsp:twitter:msg:12345:words
+		MSG: "nsp:twitter:msg",
+		MSG_PRIORITY: "nsp:twitter:priority:msg",
+
+		// sorted set: score is popularity rank
+		WORD_SCORES: "nsp:words",
 	},
 
 	search: {
