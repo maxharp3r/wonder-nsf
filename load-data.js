@@ -5,7 +5,7 @@
 var fs = require("fs");
 var Lazy=require("lazy");
 var redis = require("redis");
-var underscore = require("./static/lib/underscore-1.3.1-min");
+var underscore = require("./static/lib/underscore-1.3.3-min");
 
 var db = redis.createClient();
 db.on("error", function (err) {

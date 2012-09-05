@@ -4,7 +4,7 @@ var app = express.createServer();
 var redis = require("redis");
 var io = require('socket.io').listen(app).set("log level", 1);
 var $ = require('jquery');
-var underscore = require("./static/lib/underscore-1.3.1-min");
+var underscore = require("./static/lib/underscore-1.3.3-min");
 var request = require('request');
 var fs = require('fs');
 

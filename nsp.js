@@ -3,7 +3,7 @@ var $ = require('jquery');
 var ntwitter = require('ntwitter');
 var flickrnode = require('flickrnode').FlickrAPI;
 var redis = require("redis");
-var underscore = require("./static/lib/underscore-1.3.1-min");
+var underscore = require("./static/lib/underscore-1.3.3-min");
 
 var config = require('./config.js').config;
 var keys = require('./keys.js'); // private
