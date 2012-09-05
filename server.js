@@ -8,10 +8,27 @@ var underscore = require("./static/lib/underscore-1.3.3-min");
 var request = require('request');
 var fs = require('fs');
 
-var config = require('./config.js').config;
 var nsp = require('./nsp.js');
 var utils = require('./utils.js');
+var config = require('./config.js').config;
 
+// config overrides
+var arguments = process.argv.splice(2);
+underscore.each(arguments, function(arg) {
+	if (arg.match("help")) {
+		console.log("Options: --replay, --record");
+		throw("done");
+	}
+	if (arg.match("replay")) {
+		console.log("CONFIG: Showing recorded content");
+		config.app.DO_EMIT_FROM_REPLAY = true;
+	} else if (arg.match("record")) {
+		console.log("CONFIG: Recording content");
+		config.app.DO_SAVE_FOR_REPLAY = true;
+		config.app.NEXT_EVENT_INTERVAL_MS = config.app.RECORDING_SPEED_MS;
+		config.app.RATE_LIMIT_MS = config.app.RECORDING_SPEED_MS;
+	}
+});
 
 // app setup
 app.configure(function() {
@@ -167,6 +184,10 @@ var handleImg = function(displayPosition) {
 };
 
 var getNumToShow = function() {
+	if (config.app.DO_SAVE_FOR_REPLAY) {
+		return 1;
+	}
+
 	var numToShow = 1;
 	var r1 = utils.getRandomInt(0, 99);
 	if (r1 < 10) {

@@ -20,6 +20,12 @@ exports.config = {
 		CHECK_TWITTER_HEALTH_MS: 10 * 1000,
 		// no more than 1 message every n millis
 		RATE_LIMIT_MS: 2 * 1000,
+
+		// a delay interval for recording content
+		// TODO: this could be much faster. However, the nsp code currently assumes a slower
+		// pace, and sets global variables with flickr data. Migrate this code to use redis
+		// to scale the recording pace.
+		RECORDING_SPEED_MS: 1.5 * 1000,
 	},
 
 	ui: {
