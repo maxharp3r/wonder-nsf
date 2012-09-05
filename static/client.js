@@ -11,7 +11,7 @@ var tmpl = {
 			<div class='main big-text'><%= data.text %></div>\
 			<div class='footer small-text'>\
 				<div>@<%= data.user.screen_name %></div>\
-				<div><%= $.timeago(data.created_at) %></div>\
+				<div class='<%= data.created_class %>'><%= $.timeago(data.created_at) %></div>\
 				<div class='extra'><%= data.extra %></div>\
 			</div>\
 		</div>\
@@ -83,13 +83,16 @@ var client = {
 
 	/** return true if this socket message is explictly for this screen */
 	isMsgForMe: function(data, debug_type) {
-		if (!data || !data.displayScreen) {
-			return false;
-		}
-		var ret = this.id.indexOf(data.displayScreen) >= 0;
-		console.debug("Data: " + debug_type + " (isFormMe=" + ret + ", screen="
-			+ data.displayScreen + ", panel=" + data.displayPanel + ")");
-		return ret;
+		// always return true, we only have one screen
+		return true;
+
+//		if (!data || !data.displayScreen) {
+//			return false;
+//		}
+//		var ret = this.id.indexOf(data.displayScreen) >= 0;
+//		console.debug("Data: " + debug_type + " (isFormMe=" + ret + ", screen="
+//			+ data.displayScreen + ", panel=" + data.displayPanel + ")");
+//		return ret;
 	},
 
 	listen: function() {
@@ -107,8 +110,14 @@ var client = {
 			self.clearPhoto();
 			// console.log("next twitter: ", data);
 
+			// clean up the data
+			if (!data.extra) {
+				data.extra = "";
+			}
+			data.created_class = (data.recorded) ? "hidden" : "";
+
 			var baseId = self.dom.getPanelId(data.displayPanel);
-			var output = _.template(tmpl.results, {data: data,});
+			var output = _.template(tmpl.results, {data: data});
 			$(baseId).html(output);
 			$(baseId + " .tmpl").fadeIn(FADE_TIME);
 		});

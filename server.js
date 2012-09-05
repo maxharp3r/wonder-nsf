@@ -113,9 +113,13 @@ var handleData = function(event, data) {
 	console.log("outgoing data: " + event);
 
 	if (config.app.DO_SAVE_FOR_REPLAY && !config.app.DO_EMIT_FROM_REPLAY) {
-		$.extend(data, {event: event}); // event: nextFlickr
+		$.extend(data, {event: event});
 		// console.log("saving data: " + JSON.stringify(data));
 		db.rpush(config.dbkey.RECORDED, JSON.stringify(data));
+	}
+
+	if (config.app.DO_EMIT_FROM_REPLAY) {
+		$.extend(data, {recorded: true});
 	}
 
 	if (config.app.DO_EMIT || config.app.DO_EMIT_FROM_REPLAY) {

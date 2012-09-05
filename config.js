@@ -45,7 +45,7 @@ exports.config = {
 
 	search: {
 		TWITTER_STREAM_REGEX: /(^I wonder|^I think)/,
-		PRIORITY_REGEX: /(#namac)/i,
+		PRIORITY_REGEX: /(namac)/i,
 		// PRIORITY_REGEX: /(when)/i,
 		PRIORITY_LABEL: "NAMAC",
 	},
