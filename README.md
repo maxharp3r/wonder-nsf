@@ -8,6 +8,9 @@ Running
 
 To run: `node ./server.js` then visit http://localhost:8080
 
+Record messages: `node ./server.js --record`
+Replay recorded messages: `node ./server.js --replay`
+
 
 API Keys
 --------
@@ -23,9 +26,6 @@ Dependencies
 * brew
   * node
   * redis
-* npm (see node_modules dir)
-  * redis - https://github.com/mranney/node_redis
-  * request - https://github.com/mikeal/request
 
 
 Docs
