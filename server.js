@@ -55,6 +55,12 @@ var appState = {
 	socketsById: {}, // map id to websocket
 };
 
+// global error handling
+process.on('uncaughtException', function(err) {
+	console.log("===============================");
+	console.log("Uncaught: " + err);
+});
+
 
 // handle socket connections and messages
 // docs: https://github.com/learnboost/socket.io
