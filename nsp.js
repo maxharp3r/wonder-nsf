@@ -12,6 +12,7 @@ var utils = require('./utils.js');
 
 this.db = null;
 this.nTwitterApi = null;
+this.twitterStream = null;
 
 // application state
 this.data = {
@@ -155,7 +156,17 @@ this.initTwitterStream = function() {
 			console.warn("TWITTER DESTROY");
 			self.data.isRunning = false;
 		});
+
+		self.twitterStream = stream;
 	});
+};
+
+this.restartTwitterStream = function() {
+	this.data.isRunning = false;
+	if (this.twitterStream != null) {
+		this.twitterStream.destroy();
+	}
+	this.initTwitterStream();
 };
 
 /**

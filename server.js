@@ -43,24 +43,34 @@ app.error(function(err, req, res){
 	console.error("APP ERROR: " + err);
 });
 
-
 // configure the db connection
 var db = redis.createClient();
 db.on("error", function (err) {
 	console.error("REDIS ERROR (server): " + err);
 });
+
+//global error handling
+var exceptionCount = 0;
+process.on('uncaughtException', function(err) {
+	console.log("===============================");
+	console.log("Uncaught: " + err);
+	console.log(err.stack);
+
+	exceptionCount++;
+	if (exceptionCount > 200) {
+		console.log("too many exceptions, exiting");
+		process.exit(1);
+	}
+
+	console.log("restarting twitter stream");
+	nsp.restartTwitterStream();
+});
+
 // initialize application state
 var appState = {
 	numConnected: 0,
 	socketsById: {}, // map id to websocket
 };
-
-// global error handling
-process.on('uncaughtException', function(err) {
-	console.log("===============================");
-	console.log("Uncaught: " + err);
-});
-
 
 // handle socket connections and messages
 // docs: https://github.com/learnboost/socket.io
@@ -236,6 +246,7 @@ var nextEvent = function() {
 		};
 	});
 }
+
 
 var run = function() {
 	if (config.app.DO_EMIT_FROM_REPLAY) {
